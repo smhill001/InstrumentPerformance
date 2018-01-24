@@ -1,0 +1,8 @@
+PlotID,PlotType,X0,X1,DX,Xtype,Y0,Y1,DY,Ytype,DataList
+685NIR,TBD,350,1050,50,Lin,1e-3,2e0,10,Log,685NIR_ObsFiles.txt,
+650RED,TBD,350,1050,50,Lin,1e-3,2e0,10,Log,650RED_ObsFiles.txt,
+550GRN,TBD,350,1050,50,Lin,1e-3,2e0,10,Log,550GRN_ObsFiles.txt,
+450BLU,TBD,350,1050,50,Lin,1e-3,2e0,10,Log,450BLU_ObsFiles.txt,
+380NUV,TBD,350,1050,50,Lin,1e-3,2e0,10,Log,380NUV_ObsFiles.txt,
+550CLR,TBD,350,1050,50,Lin,1e-3,2e0,10,Log,550CLR_ObsFiles.txt,
+

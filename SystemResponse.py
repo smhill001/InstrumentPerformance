@@ -50,6 +50,7 @@ import sys
 drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play')
 sys.path.append(drive+'\\Astronomy\Python Play\Techniques Library')
+sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
 
 import matplotlib.pyplot as pl
 import pylab
@@ -57,7 +58,10 @@ import numpy as np
 import scipy
 from scipy import interpolate
 from copy import deepcopy
+import GalaxyLIB as GL
+import SysRespLIB as SRL
 
+###############################################################################
 path=drive+"/Astronomy/Projects/Stars/Vega/Spectral Data/1D Spectra/"
 # Read and reshape spectral data files    
 Vega20130921UT = scipy.fromfile(file=path+"VegaResponse20130921UT.txt", dtype=float, count=-1, sep='\t')    
@@ -69,90 +73,32 @@ Vega20130921UT=scipy.reshape(Vega20130921UT,[Vega20130921UT.size/2,2])
 #Vega20140916UT = scipy.fromfile(file=path+"VegaResponse20140916UT.txt", dtype=float, count=-1, sep='\t')    
 #Vega20140916UT=scipy.reshape(Vega20140916UT,[Vega20140916UT.size/2,2])
 
-Vega20150913UT = scipy.fromfile(file=path+"Vega_20150913025152_Response.txt", dtype=float, count=-1, sep='\t')    
-Vega20150913UT=scipy.reshape(Vega20150913UT,[Vega20150913UT.size/2,2])
 
-ZeroIndices=np.where(Vega20150913UT[:,1] == 0.)
-Vega20150913UT[ZeroIndices,1]=np.nan
+PlotParams=SRL.SysResp_plot_params(drive,"550CLR","TBD")
+CLR550_ObsList=SRL.measurement_list(PlotParams.DataFile)
+MeanCLR=SRL.Average_Spectrum("f:",CLR550_ObsList)
+Mean200linespermm1260mm=MeanCLR
+print "#####################MeanCLR.shape=",MeanCLR.shape
+###############################################################################
+PlotParams=SRL.SysResp_plot_params(drive,"685NIR","TBD")
+NIR685_ObsList=SRL.measurement_list(PlotParams.DataFile)
+MeanNIR=SRL.Average_Spectrum("f:",NIR685_ObsList)
 
+PlotParams=SRL.SysResp_plot_params(drive,"650RED","TBD")
+RED650_ObsList=SRL.measurement_list(PlotParams.DataFile)
+MeanRED=SRL.Average_Spectrum("f:",RED650_ObsList)
 
-Vega20150925UT = scipy.fromfile(file=path+"Vega_20150925032310_Response.txt", dtype=float, count=-1, sep='\t')    
-Vega20150925UT=scipy.reshape(Vega20150925UT,[Vega20150925UT.size/2,2])
+PlotParams=SRL.SysResp_plot_params(drive,"550GRN","TBD")
+GRN550_ObsList=SRL.measurement_list(PlotParams.DataFile)
+MeanGRN=SRL.Average_Spectrum("f:",GRN550_ObsList)
 
-Vega20151014UT = scipy.fromfile(file=path+"Vega_20151014025716_Response.txt", dtype=float, count=-1, sep='\t')    
-Vega20151014UT=scipy.reshape(Vega20151014UT,[Vega20151014UT.size/2,2])
+PlotParams=SRL.SysResp_plot_params(drive,"450BLU","TBD")
+BLU450_ObsList=SRL.measurement_list(PlotParams.DataFile)
+MeanBLU=SRL.Average_Spectrum("f:",BLU450_ObsList)
 
-Vega20151015UT = scipy.fromfile(file=path+"Vega20151015023120_Response.txt", dtype=float, count=-1, sep='\t')    
-Vega20151015UT=scipy.reshape(Vega20151015UT,[Vega20151015UT.size/2,2])
-
-temparray=[Vega20150913UT[:,1],Vega20150925UT[:,1],Vega20151014UT[:,1],Vega20151015UT[:,1]]    
-
-#where is 20151015
-z=np.nanmean(temparray,axis=0)
-std=np.nanstd(temparray,axis=0) 
-#sem=scipy.stats.sem(temparray,axis=0,ddof=0,nan_policy='omit')
-Mean200linespermm1260mm=np.zeros([Vega20150913UT.size/2,4])
-Mean200linespermm1260mm[:,0]=Vega20150913UT[:,0]
-Mean200linespermm1260mm[:,1]=z
-Mean200linespermm1260mm[:,2]=std
-Mean200linespermm1260mm[:,3]=std#sem
-
-path=drive+"/Astronomy/Projects/Stars/Aldebaran/Spectral Data/1D Spectra/"
-NIRAldebaran20130117UT = scipy.fromfile(file=path+"Aldebaran-685NIR-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-NIRAldebaran20130117UT=scipy.reshape(NIRAldebaran20130117UT,[NIRAldebaran20130117UT.size/2,2])
-path=drive+"/Astronomy/Projects/Stars/Rigel/Spectral Data/1D Spectra/"
-NIRRigel20130117UT = scipy.fromfile(file=path+"Rigel-685NIR-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-NIRRigel20130117UT=scipy.reshape(NIRRigel20130117UT,[NIRRigel20130117UT.size/2,2])
-temparray=[NIRAldebaran20130117UT[:,1],NIRRigel20130117UT[:,1]]    
-zNIR=np.nanmean(temparray,axis=0)
-MeanNIR=np.zeros([NIRAldebaran20130117UT.size/2,4])
-MeanNIR[:,0]=NIRAldebaran20130117UT[:,0]
-MeanNIR[:,1]=zNIR
-
-path=drive+"/Astronomy/Projects/Stars/Aldebaran/Spectral Data/1D Spectra/"
-REDAldebaran20130117UT = scipy.fromfile(file=path+"Aldebaran-650RED-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-REDAldebaran20130117UT=scipy.reshape(REDAldebaran20130117UT,[REDAldebaran20130117UT.size/2,2])
-path=drive+"/Astronomy/Projects/Stars/Rigel/Spectral Data/1D Spectra/"
-REDRigel20130117UT = scipy.fromfile(file=path+"Rigel-650RED-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-REDRigel20130117UT=scipy.reshape(REDRigel20130117UT,[REDRigel20130117UT.size/2,2])
-temparray=[REDAldebaran20130117UT[:,1],REDRigel20130117UT[:,1]]    
-zRED=np.nanmean(temparray,axis=0)
-MeanRED=np.zeros([REDAldebaran20130117UT.size/2,4])
-MeanRED[:,0]=REDAldebaran20130117UT[:,0]
-MeanRED[:,1]=zRED
-
-path=drive+"/Astronomy/Projects/Stars/Aldebaran/Spectral Data/1D Spectra/"
-GRNAldebaran20130117UT = scipy.fromfile(file=path+"Aldebaran-550GRN-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-GRNAldebaran20130117UT=scipy.reshape(GRNAldebaran20130117UT,[GRNAldebaran20130117UT.size/2,2])
-path=drive+"/Astronomy/Projects/Stars/Rigel/Spectral Data/1D Spectra/"
-GRNRigel20130117UT = scipy.fromfile(file=path+"Rigel-550GRN-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-GRNRigel20130117UT=scipy.reshape(GRNRigel20130117UT,[GRNRigel20130117UT.size/2,2])
-temparray=[GRNAldebaran20130117UT[:,1],GRNRigel20130117UT[:,1]]    
-zGRN=np.nanmean(temparray,axis=0)
-MeanGRN=np.zeros([GRNAldebaran20130117UT.size/2,4])
-MeanGRN[:,0]=GRNAldebaran20130117UT[:,0]
-MeanGRN[:,1]=zGRN
-
-path=drive+"/Astronomy/Projects/Stars/Aldebaran/Spectral Data/1D Spectra/"
-BLUAldebaran20130117UT = scipy.fromfile(file=path+"Aldebaran-450BLU-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-BLUAldebaran20130117UT=scipy.reshape(BLUAldebaran20130117UT,[BLUAldebaran20130117UT.size/2,2])
-path=drive+"/Astronomy/Projects/Stars/Rigel/Spectral Data/1D Spectra/"
-BLURigel20130117UT = scipy.fromfile(file=path+"Rigel-450BLU-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-BLURigel20130117UT=scipy.reshape(BLURigel20130117UT,[BLURigel20130117UT.size/2,2])
-temparray=[BLUAldebaran20130117UT[:,1],BLURigel20130117UT[:,1]]    
-zBLU=np.nanmean(temparray,axis=0)
-MeanBLU=np.zeros([BLUAldebaran20130117UT.size/2,4])
-MeanBLU[:,0]=BLUAldebaran20130117UT[:,0]
-MeanBLU[:,1]=zBLU
-
-path=drive+"/Astronomy/Projects/Stars/Rigel/Spectral Data/1D Spectra/"
-NUVRigel20130117UT = scipy.fromfile(file=path+"Rigel-380NUV-20130117UT_Response.txt", dtype=float, count=-1, sep='\t')    
-NUVRigel20130117UT=scipy.reshape(NUVRigel20130117UT,[NUVRigel20130117UT.size/2,2])
-temparray=[NUVRigel20130117UT[:,1]]    
-zNUV=np.nanmean(temparray,axis=0)
-MeanNUV=np.zeros([NUVRigel20130117UT.size/2,4])
-MeanNUV[:,0]=NUVRigel20130117UT[:,0]
-MeanNUV[:,1]=zNUV
+PlotParams=SRL.SysResp_plot_params(drive,"380NUV","TBD")
+NUV380_ObsList=SRL.measurement_list(PlotParams.DataFile)
+MeanNUV=SRL.Average_Spectrum("f:",NUV380_ObsList)
 
 #compute mean ignoring NANs   
 
@@ -164,6 +110,7 @@ MeanNUV[:,1]=zNUV
 #VegaAvg_20140902and16=(Vega20140916UT_on_20140902UT+Vega20140902UT[:,1])/2.
 #Begin plotting 
 
+###############################################################################
 pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
 
 pl.subplot(1, 1, 1)
@@ -185,26 +132,20 @@ pl.ylim(y0,y1)
 pl.yscale('log')
 pl.grid()
 pl.tick_params(axis='both', which='major', labelsize=7)
-pl.ylabel(r"$Counts-s^{-1}$-$m^{-2}$-$nm^{-1}$",fontsize=7)
+pl.ylabel(r"$Normalized$ $Response$",fontsize=7)
 pl.xlabel(r"$Wavelength (nm)$",fontsize=7)
-pl.title("Vega Response - All Data",fontsize=9)
+pl.title("Normalized Response",fontsize=9)
 pl.plot(Vega20130921UT[:,0]/10.,Vega20130921UT[:,1],label='20130921UT',linewidth=1)
 #pl.plot(Vega20140902UT[:,0]/10.,Vega20140902UT[:,1],label='20140902UT',linewidth=0.5)
 #pl.plot(Vega20140916UT[:,0]/10.,Vega20140916UT[:,1],label='20140916UT',linewidth=0.5)
 #pl.plot(Vega20140916UT[:,0]/10.,VegaAvg_20140902and16,label='20140902-16UT Avg',linewidth=1,color='k')
 
-pl.plot(Vega20150913UT[:,0],Vega20150913UT[:,1],label='20150913UT',linewidth=0.5)
-pl.plot(Vega20150925UT[:,0],Vega20150925UT[:,1],label='20150925UT',linewidth=0.5)
-pl.plot(Vega20151014UT[:,0],Vega20151014UT[:,1],label='20151014UT',linewidth=0.5)
-pl.plot(Vega20151015UT[:,0],Vega20151015UT[:,1],label='20151015UT',linewidth=0.5)
-
-pl.plot(Mean200linespermm1260mm[:,0],Mean200linespermm1260mm[:,1],label='200lpm',linewidth=1.0)
-pl.plot(MeanNIR[:,0],MeanNIR[:,1]*0.295*0.740,label='zNIR',linewidth=1.0,color='k')
+pl.plot(Mean200linespermm1260mm[:,0],Mean200linespermm1260mm[:,1],label='200lpm',linewidth=1.0,color='k')
+pl.plot(MeanNIR[:,0],MeanNIR[:,1]*0.295*0.740,label='zNIR',linewidth=1.0,color='C3')
 pl.plot(MeanRED[:,0],MeanRED[:,1]*0.580,label='zRED',linewidth=1.0,color='r')
 pl.plot(MeanGRN[:,0],MeanGRN[:,1]*0.943,label='zGRN',linewidth=1.0,color='g')
 pl.plot(MeanBLU[:,0],MeanBLU[:,1]*0.980,label='zBLU',linewidth=1.0,color='b')
 pl.plot(MeanNUV[:,0],MeanNUV[:,1]*0.028,label='zBLU',linewidth=1.0,color='m')
-
 
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
@@ -212,12 +153,12 @@ pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
 
 path=drive+"/Astronomy/Projects/Techniques/Flux Calibration/"
 
-
 pylab.savefig(path+'FluxCalibrationYears.png',dpi=300)
 
 np.savetxt(path+'FluxCalibrationYears.txt',Mean200linespermm1260mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
+###############################################################################
 #Label,Type,Start,End,Center,Avg.,SEM,WAvg.,WEM
 #The Start and End wavelengths are the limits of consideration for the 
 #computed values, not the actual FWHM.

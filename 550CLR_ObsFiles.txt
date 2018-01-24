@@ -1,0 +1,2 @@
+MeasTarget,DataType,DataTarget,DateUT,Optics,Camera,FileList
+Vega,Stars,Vega,201XXXXX,135mm,ST2000,Vega_550CLR_Obs.txt,
