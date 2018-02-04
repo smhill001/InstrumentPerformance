@@ -1,3 +1,3 @@
-MeasTarget,DataType,DataTarget,DateUT,Optics,Camera,FileList
-Aldebaran,Stars,Aldebaran,20130117,135mm,ST2000,Aldebaran_650RED_Obs.txt,
-Rigel,Stars,Rigel,20130117,135mm,ST2000,Rigel_650RED_Obs.txt,
+MeasTarget,DataType,DataTarget,DateUT,Optics,Camera,Grating,FileList
+Aldebaran,Stars,Aldebaran,20130117,135mm,ST2000,100lpm,Aldebaran_650RED_Obs.txt,
+Rigel,Stars,Rigel,20130117,135mm,ST2000,100lpm,Rigel_650RED_Obs.txt,

@@ -50,39 +50,42 @@ class SysResp_plot_params(GL.Plot_Parameters):
                     self.Ytype=str(fields[9])
                     self.DataFile=str(fields[10])
 
+        
 class measurement_list:
-    #This is the first cut at a base class. It is a truncated version
-    #  of the class used by the photometry code. Thus, the photometry code
-    #  should be updated to build on this base class.
     def __init__(self,MeasurementListFile):
         #The initial plan is to read ALL records in the observation list
+
+        CfgFile=open(MeasurementListFile,'r')
+        self.CfgLines=CfgFile.readlines()
+        CfgFile.close()
+        self.nrecords=len(self.CfgLines)
+        self.MeasurmentListFile=MeasurementListFile
+
+    def load_all_data(self):
+        
         self.MeasTarget=['']   #Keyword for star identification
         self.DataType=['']           #Target, e.g., component of a multiple star
         self.DataTarget=['']           #Target, e.g., component of a multiple star
         self.DateUT=['']           #UT Date of observation: YYYYMMDDUT
         self.Optics=['']       #Instrument code, to be used for aperture
         self.Camera=['']       #Instrument code, to be used for aperture
+        self.Grating=['']    #Grating 100lpm or 200lpm or None
         self.FileList=['']         #List of observation image files (FITS)
         self.NObs=0                #Number of observatinos
-        self.FirstTime=True
-        
-        CfgFile=open(MeasurementListFile,'r')
-        CfgLines=CfgFile.readlines()
-        CfgFile.close()
-        nrecords=len(CfgLines)
-        #print CfgLines
+        FirstTime=True
 
-        for recordindex in range(1,nrecords):
-            fields=CfgLines[recordindex].split(',')
-            if self.FirstTime:
+        for recordindex in range(1,self.nrecords):
+            fields=self.CfgLines[recordindex].split(',')
+            if FirstTime:
                 self.MeasTarget[0]=str(fields[0])
                 self.DataType[0]=str(fields[1])
                 self.DataTarget[0]=str(fields[2])
                 self.DateUT[0]=str(fields[3])
                 self.Optics[0]=str(fields[4])
                 self.Camera[0]=str(fields[5])
-                self.FileList[0]=str(fields[6])
-                self.FirstTime=False
+                self.Grating[0]=str(fields[6])
+                self.FileList[0]=str(fields[7])
+                FirstTime=False
                 self.NObs=1
             else:
                 self.MeasTarget.extend([str(fields[0])])
@@ -91,28 +94,67 @@ class measurement_list:
                 self.DateUT.extend([str(fields[3])])
                 self.Optics.extend([str(fields[4])])
                 self.Camera.extend([str(fields[5])])
-                self.FileList.extend([str(fields[6])])
+                self.Grating.extend([str(fields[6])])
+                self.FileList.extend([str(fields[7])])
                 self.NObs=self.NObs+1
+
+    def load_select_data(self,MeasTgt):
+        
+        self.MeasTarget=['']   #Keyword for star identification
+        self.DataType=['']           #Target, e.g., component of a multiple star
+        self.DataTarget=['']           #Target, e.g., component of a multiple star
+        self.DateUT=['']           #UT Date of observation: YYYYMMDDUT
+        self.Optics=['']       #Instrument code, to be used for aperture
+        self.Camera=['']       #Instrument code, to be used for aperture
+        self.Grating=['']    #Grating 100lpm or 200lpm or None
+        self.FileList=['']         #List of observation image files (FITS)
+        self.NObs=0                #Number of observatinos
+        FirstTime=True
+
+        for recordindex in range(1,self.nrecords):
+            fields=self.CfgLines[recordindex].split(',')
+            if fields[0]==MeasTgt:
+                if FirstTime:
+                    self.MeasTarget[0]=str(fields[0])
+                    self.DataType[0]=str(fields[1])
+                    self.DataTarget[0]=str(fields[2])
+                    self.DateUT[0]=str(fields[3])
+                    self.Optics[0]=str(fields[4])
+                    self.Camera[0]=str(fields[5])
+                    self.Grating[0]=str(fields[6])
+                    self.FileList[0]=str(fields[7])
+                    FirstTime=False
+                    self.NObs=1
+                else:
+                    self.MeasTarget.extend([str(fields[0])])
+                    self.DataType.extend([str(fields[1])])
+                    self.DataTarget.extend([str(fields[2])])
+                    self.DateUT.extend([str(fields[3])])
+                    self.Optics.extend([str(fields[4])])
+                    self.Camera.extend([str(fields[5])])
+                    self.Grating.extend([str(fields[6])])
+                    self.FileList.extend([str(fields[7])])
+                    self.NObs=self.NObs+1
 
 
 def Average_Spectrum(drive,ObsList):
     import numpy as np
     import scipy
+    import scipy.stats as ST
     path=drive+"/Astronomy/Python Play/TechniquesLibrary/"
     print path
     for i in range(0,len(ObsList.FileList)):
         print "******** i=",i
         FNList=GetObsFileNames(path,ObsList.FileList[i])
-        print "len(FNList)",len(FNList),FNList
+        print "********len(FNList)",len(FNList),FNList
         path=drive+"/Astronomy/Projects/"+ObsList.DataType[i]+"/"+ObsList.DataTarget[i]+"/Spectral Data/1D Spectra/"
         ###Need loop over data files here!!! "j"
         for j in range(0,len(FNList)):
+            print "****** j=",j
             temp1 = scipy.fromfile(file=path+FNList[j], dtype=float, count=-1, sep='\t')    
             temp2 = scipy.reshape(temp1,[temp1.size/2,2])
             wave = temp2[:,0]
             tmpsig=temp2[:,1]
-            #ZeroIndices=np.where(tmpsig <= 0.)
-            #tmpsig[ZeroIndices]=np.nan
             print i
             print temp2.shape
     
@@ -126,15 +168,17 @@ def Average_Spectrum(drive,ObsList):
             
     ZeroIndices=np.where(signalarray <= 0.)
     signalarray[ZeroIndices]=np.nan
-            
+    #pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
+    #pl.plot(wave,signalarray[:,0])        
     AvgSignal=np.nanmean(signalarray,axis=1)
     std=np.nanstd(signalarray,axis=1) 
+    sem=ST.sem(signalarray,axis=1,ddof=0,nan_policy='omit')
         
     MeanSpec=np.zeros([wave.size,4])
     MeanSpec[:,0]=wave
     MeanSpec[:,1]=AvgSignal
     MeanSpec[:,2]=std
-    #Mean200linespermm1260mm[:,3]=std#sem
+    MeanSpec[:,3]=sem
     
     return MeanSpec
     
@@ -161,36 +205,68 @@ def GetObsFileNames(Path,IndexFile):
             
     return FNArray
 
-def PlotHII(Target,X_data,Y_data,plotparams):                
+def Draw_with_Conf_Level(Data,scl,clr,lbl):                
 #Plot Layout Configuration
     import pylab as pl
-    import numpy as np
-    
-    pl.grid()
-    pl.xlim(plotparams.X0,plotparams.X1)
-    pl.xticks(np.arange(plotparams.X0,plotparams.X1+.000001,plotparams.DX))
-    pl.ylim(plotparams.Y0,plotparams.Y1)
-    pl.yticks(np.arange(plotparams.Y0,plotparams.Y1+.000001,plotparams.DY))  
-    pl.tick_params(axis='both', which='major', labelsize=7)
-    
-    pl.title("H II Radial Distribution",fontsize=9)
-    if plotparams.PlotType == "POSHist":
-        pl.hist(X_data,bins=Y_data,label=Target)
-        pl.ylabel(r"$H$ $II$ $Region$ $(Count)$",fontsize=7)
-    elif plotparams.PlotType == "POSDens":
-        p=pl.plot(X_data,Y_data,label=Target,marker='.',linewidth=1.0)
-        pl.xlabel(r"$Radius$ $(arcmin)$",fontsize=7)
-        pl.ylabel(r"$H$ $II$ $Region$ $(Count)$",fontsize=7)
-        print "COLOR=",p[0].get_color()
-
-    elif plotparams.PlotType == "POSLoc":
-        pl.xlabel(r"$Delta$ $RA$ $(arcmin)$",fontsize=7)
-        pl.ylabel(r"$Delta$ $DE$ $(arcmin)$",fontsize=7)
-        pl.title("H II Location Distribution",fontsize=9)
-        pl.scatter(X_data,Y_data,label=Target,marker='o',edgecolor="#1f77b4",
-                   linewidth =1.0,facecolor="") 
-        
-    pl.legend(loc=1,ncol=2, borderaxespad=0.,prop={'size':6})        
-
+    pl.plot(Data[:,0],Data[:,1]*scl,label=lbl,linewidth=1.0,color=clr)
+    pl.plot(Data[:,0],(Data[:,1]+1.96*Data[:,3])*scl,linewidth=0.5,color=clr)
+    pl.plot(Data[:,0],(Data[:,1]-1.96*Data[:,3])*scl,linewidth=0.5,color=clr)
+    #ax.fill_between((Data[:,0]),(Data[:,1]+1.96*Data[:,3])*scl,(Data[:,1]-1.96*Data[:,3])*scl)
     return 0        
 
+
+def Compute_EWs(path,Spectrum_with_Stats):
+###############################################################################
+#Label,Type,Start,End,Center,Avg. Response,SEM Response,WAvg.,WEM
+#The Start and End wavelengths are the limits of consideration for the 
+#computed values, not the actual FWHM.
+    import numpy as np
+    
+    List=[['380NUV','Filter',379.,381.,0.,0.,0.,0.,0.],
+          ['450BLU','Filter',410.,510.,0.,0.,0.,0.,0.],
+          ['486HIB','Line  ',485.,486.,0.,0.,0.,0.,0.],
+          ['501OIII','Line  ',496.,502.,0.,0.,0.,0.,0.],
+          ['550GRN','Filter',480.,570.,0.,0.,0.,0.,0.],
+          ['650RED','Filter',610.,685.,0.,0.,0.,0.,0.],
+          ['656HIA','Line  ',655.,657.,0.,0.,0.,0.,0.],
+          ['672SII','Line  ',671.,673.,0.,0.,0.,0.,0.],
+          ['685NIR','Filter',685.,1050.,0.,0.,0.,0.,0.],
+          ['685-742','Filter',685.,742.,0.,0.,0.,0.,0.],
+          ['714ArIII','Line  ',713.,715.,0.,0.,0.,0.,0.],
+          ['742NIR','Filter',742.,1050.,0.,0.,0.,0.,0.],
+          ['742-807','Filter',742.,807.,0.,0.,0.,0.,0.],
+          ['775ArIII','Line  ',774.,775.,0.,0.,0.,0.,0.],
+          ['807NIR','Filter',807.,1050.,0.,0.,0.,0.,0.],
+          ['889CH4','Filter',888.,890.,0.,0.,0.,0.,0.],
+          ['907SIII','Line  ',906.,908.,0.,0.,0.,0.,0.],
+          ['953SIII','Line  ',952.,954.,0.,0.,0.,0.,0.]]
+    
+    #print List[0][5]      
+    Outfile=path+'test.txt'
+    Append=False
+    for i in range(0,len(List)):       
+        StartIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][2]))
+        EndIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][3]))
+        List[i][4]=np.mean([List[i][2],List[i][3]])
+        #print StartIndex[0],EndIndex[0]
+        #print Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1]
+        List[i][5]=np.mean(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],1])
+        #List[i][6]=scipy.stats.sem(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1],ddof=0)
+        #frac_sem=(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],3])/(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1])
+        #test=1./frac_sem**2
+        #List[i][7]=np.average(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1],weights=test)
+        List[i][8]=np.sqrt(np.sum(np.square(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],3])))/Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],3].size
+        tempstring=','.join(['%.3f' % num for num in List[i][2:9]])
+        tempstring=List[i][0]+","+List[i][1]+","+tempstring+",\n"
+        if Append:
+            with open(Outfile, "a") as text_file:
+                text_file.write(tempstring)
+                text_file.close() 
+        else:
+            text_file = open(Outfile, "w")
+            text_file.write("Label,Type,Start,End,Center,Avg.,SEM,WAvg.,WEM\n")
+            text_file.write(tempstring)
+            text_file.close()
+            Append=True
+    print List
+    #print test

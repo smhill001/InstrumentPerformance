@@ -1,2 +1,2 @@
-MeasTarget,DataType,DataTarget,DateUT,Optics,Camera,FileList
-Rigel,Stars,Rigel,20130117,135mm,ST2000,Rigel_380NUV_Obs.txt,
+MeasTarget,DataType,DataTarget,DateUT,Optics,Grating,Camera,FileList
+Rigel,Stars,Rigel,20130117,135mm,ST2000,100lpm,Rigel_380NUV_Obs.txt,

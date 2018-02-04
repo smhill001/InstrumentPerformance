@@ -1,2 +1,4 @@
-MeasTarget,DataType,DataTarget,DateUT,Optics,Camera,FileList
-Vega,Stars,Vega,201XXXXX,135mm,ST2000,Vega_550CLR_Obs.txt,
+MeasTarget,DataType,DataTarget,DateUT,Optics,Camera,Grating,FileList
+1260mm200lpm,Stars,Vega,2015XXXX,1260mm,ST2000,200lpm,Vega_550CLR_1260mm_200lpm_Obs.txt,
+1260mm100lpm,Stars,Vega,20130921,1260mm,ST2000,100lpm,Vega_550CLR_1260mm_100lpm_Obs.txt,
+135mm100lpm,Stars,Vega,201409XX,135mm,ST2000,100lpm,Vega_550CLR_135mm_100lpm_Obs.txt,
