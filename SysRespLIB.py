@@ -4,15 +4,22 @@ Created on Wed Feb 08 09:21:01 2017
 
     This library is intended to read, manipulate and write spectral data,
     specifically for the purpose of analyzing observing system response. 
-
+    
+    0CLASS SysResp_plot_params
+    0FUNCTION Setup_Plot(scale)
+    0FUNCTION Draw_with_Conf_Level(Data,scl,clr,lbl)
+    1CLASS measurement_list
+    1FUNCTION GetObsFileNames(Path,IndexFile)
+    2FUNCTION Average_Spectrum(drive,ObsList)
+    2FUNCTION Compute_Transmission(Response_with_Filter,Response_without_Filter)
+    2FUNCTION Compute_EWs(path,outfile,Spectrum_with_Stats)
+ 
 @author: Astronomy
 """
 import sys
 drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
 import GalaxyLIB as GL
-
-
 
 class SysResp_plot_params(GL.Plot_Parameters):
     """
@@ -50,7 +57,40 @@ class SysResp_plot_params(GL.Plot_Parameters):
                     self.Ytype=str(fields[9])
                     self.DataFile=str(fields[10])
 
-        
+def Setup_Plot(scale):
+    import pylab as pl
+    import numpy as np
+
+    pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
+    pl.subplot(1, 1, 1)
+    #Plot Layout Configuration
+    x0,x1,xtks=350,1050,15
+    y0,y1=1e-3,1.2e0
+    
+    pl.xlim(x0,x1)
+    pl.xticks(np.linspace(x0,x1,xtks, endpoint=True))
+    
+    pl.ylim(y0,y1)
+    pl.yscale(scale)
+    
+    pl.grid()
+    pl.tick_params(axis='both', which='major', labelsize=7)
+    
+    pl.ylabel(r"$Normalized$ $Response$",fontsize=7)
+    pl.xlabel(r"$Wavelength (nm)$",fontsize=7)
+    pl.title("Normalized Response",fontsize=9)
+    
+    return 0
+
+def Draw_with_Conf_Level(Data,scl,clr,lbl):                
+#Plot Layout Configuration
+    import pylab as pl
+    pl.plot(Data[:,0],Data[:,1]*scl,label=lbl,linewidth=1.0,color=clr)
+    pl.plot(Data[:,0],(Data[:,1]+1.96*Data[:,3])*scl,linewidth=0.2,color=clr)
+    pl.plot(Data[:,0],(Data[:,1]-1.96*Data[:,3])*scl,linewidth=0.2,color=clr)
+    #ax.fill_between((Data[:,0]),(Data[:,1]+1.96*Data[:,3])*scl,(Data[:,1]-1.96*Data[:,3])*scl)
+    return 0        
+       
 class measurement_list:
     def __init__(self,MeasurementListFile):
         #The initial plan is to read ALL records in the observation list
@@ -136,6 +176,27 @@ class measurement_list:
                     self.FileList.extend([str(fields[7])])
                     self.NObs=self.NObs+1
 
+def GetObsFileNames(Path,IndexFile):
+    """
+    A base class for reading a list of data files (observations). This should
+    also be a single base class used for the photometry project.
+    """
+    CfgFile=open(IndexFile,'r')
+    CfgLines=CfgFile.readlines()
+    CfgFile.close()
+    nrecords=len(CfgLines)
+    #print CfgLines
+    FNArray=['']
+    FirstTime=True
+    for recordindex in range(0,nrecords):
+        fields=CfgLines[recordindex].split(',')
+        if FirstTime:
+            FNArray[0]=str(fields[0])
+            FirstTime=False
+        else:
+            FNArray.extend([str(fields[0])])
+            
+    return FNArray
 
 def Average_Spectrum(drive,ObsList):
     import numpy as np
@@ -182,46 +243,24 @@ def Average_Spectrum(drive,ObsList):
     
     return MeanSpec
     
- 
-def GetObsFileNames(Path,IndexFile):
-    """
-    A base class for reading a list of data files (observations). This should
-    also be a single base class used for the photometry project.
-    """
-    CfgFile=open(IndexFile,'r')
-    CfgLines=CfgFile.readlines()
-    CfgFile.close()
-    nrecords=len(CfgLines)
-    #print CfgLines
-    FNArray=['']
-    FirstTime=True
-    for recordindex in range(0,nrecords):
-        fields=CfgLines[recordindex].split(',')
-        if FirstTime:
-            FNArray[0]=str(fields[0])
-            FirstTime=False
-        else:
-            FNArray.extend([str(fields[0])])
-            
-    return FNArray
+def Compute_Transmission(Response_with_Filter,Response_without_Filter):
+    from copy import deepcopy
+    import numpy as np
+    Transmission=deepcopy(Response_without_Filter)
+    Transmission[:,1]=Response_with_Filter[:,1]/Response_without_Filter[:,1]
+    Transmission[:,2]=Transmission[:,1]*np.sqrt((Response_with_Filter[:,2]/Response_with_Filter[:,1])**2+
+            (Response_without_Filter[:,2]/Response_without_Filter[:,1])**2,)
+    Transmission[:,3]=Transmission[:,1]*np.sqrt((Response_with_Filter[:,3]/Response_with_Filter[:,1])**2+
+            (Response_without_Filter[:,3]/Response_without_Filter[:,1])**2,)
+    return Transmission
 
-def Draw_with_Conf_Level(Data,scl,clr,lbl):                
-#Plot Layout Configuration
-    import pylab as pl
-    pl.plot(Data[:,0],Data[:,1]*scl,label=lbl,linewidth=1.0,color=clr)
-    pl.plot(Data[:,0],(Data[:,1]+1.96*Data[:,3])*scl,linewidth=0.5,color=clr)
-    pl.plot(Data[:,0],(Data[:,1]-1.96*Data[:,3])*scl,linewidth=0.5,color=clr)
-    #ax.fill_between((Data[:,0]),(Data[:,1]+1.96*Data[:,3])*scl,(Data[:,1]-1.96*Data[:,3])*scl)
-    return 0        
-
-
-def Compute_EWs(path,Spectrum_with_Stats):
+def Compute_EWs(path,outfile,Spectrum_with_Stats):
 ###############################################################################
 #Label,Type,Start,End,Center,Avg. Response,SEM Response,WAvg.,WEM
 #The Start and End wavelengths are the limits of consideration for the 
 #computed values, not the actual FWHM.
     import numpy as np
-    
+
     List=[['380NUV','Filter',379.,381.,0.,0.,0.,0.,0.],
           ['450BLU','Filter',410.,510.,0.,0.,0.,0.,0.],
           ['486HIB','Line  ',485.,486.,0.,0.,0.,0.,0.],
@@ -242,15 +281,15 @@ def Compute_EWs(path,Spectrum_with_Stats):
           ['953SIII','Line  ',952.,954.,0.,0.,0.,0.,0.]]
     
     #print List[0][5]      
-    Outfile=path+'test.txt'
+    Outfile=path+outfile+'.txt'
     Append=False
     for i in range(0,len(List)):       
         StartIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][2]))
         EndIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][3]))
-        List[i][4]=np.mean([List[i][2],List[i][3]])
+        List[i][4]=np.nanmean([List[i][2],List[i][3]])
         #print StartIndex[0],EndIndex[0]
         #print Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1]
-        List[i][5]=np.mean(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],1])
+        List[i][5]=np.nanmean(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],1])
         #List[i][6]=scipy.stats.sem(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1],ddof=0)
         #frac_sem=(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],3])/(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1])
         #test=1./frac_sem**2
@@ -264,7 +303,7 @@ def Compute_EWs(path,Spectrum_with_Stats):
                 text_file.close() 
         else:
             text_file = open(Outfile, "w")
-            text_file.write("Label,Type,Start,End,Center,Avg.,SEM,WAvg.,WEM\n")
+            text_file.write("Label ,Type  ,Start  ,End    ,Center ,Avg. ,SEM  ,WAvg. ,WEM  \n")
             text_file.write(tempstring)
             text_file.close()
             Append=True
