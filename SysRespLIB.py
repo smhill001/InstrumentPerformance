@@ -6,22 +6,39 @@ Created on Wed Feb 08 09:21:01 2017
     specifically for the purpose of analyzing observing system response. 
     
     0CLASS SysResp_plot_params
-    0FUNCTION Setup_Plot(scale)
+    0  INIT
+    0  Setup_Plot
     0FUNCTION Draw_with_Conf_Level(Data,scl,clr,lbl)
     1CLASS measurement_list
+    1  INIT
+    1  Load_all_data
+    1  Load_select_data
     1FUNCTION GetObsFileNames(Path,IndexFile)
-    2FUNCTION Average_Spectrum(drive,ObsList)
+    2CLASS SpectrumAggregation(drive,ObsList)
+    2  INIT
+    2  ComputeAverageandStats
     2FUNCTION Compute_Transmission(Response_with_Filter,Response_without_Filter)
     2FUNCTION Compute_EWs(path,outfile,Spectrum_with_Stats)
  
-@author: Astronomy
+@author: SM Hill
+Update 2/11/2018
 """
 import sys
 drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
-import GalaxyLIB as GL
 
-class SysResp_plot_params(GL.Plot_Parameters):
+class readtextfilelines:
+    def __init__(self,FiletoRead):
+        #Read ALL records in a text file. No path info is needed because
+        #  it reads from the working directory. This may or may not be
+        #  a good general working assumption.
+        CfgFile=open(FiletoRead,'r')
+        self.CfgLines=CfgFile.readlines()
+        CfgFile.close()
+        self.nrecords=len(self.CfgLines)
+        self.FiletoRead=FiletoRead
+
+class SysResp_plot_params(readtextfilelines):
     """
     This class builds on the base class to add parameters specific to
     HII plots. In this case, there are no additions, just the code to
@@ -29,19 +46,14 @@ class SysResp_plot_params(GL.Plot_Parameters):
     
     SMH 1/11/18
     """
-    def __init__(self,drive,PlotID,PlotType):
+    pass
+    def loadplotparams(self,drive,PlotID,PlotType):
         #View has two options: raw or flux?
 
         self.ID=PlotID
 
-        CfgFile=open(drive+'/Astronomy/Python Play/TechniquesLibrary/FluxCalPlotConfig.txt','r')
-        CfgLines=CfgFile.readlines()
-        CfgFile.close()
-        nrecords=len(CfgLines)
-        #print CfgLines
-
-        for recordindex in range(1,nrecords):
-            fields=CfgLines[recordindex].split(',')
+        for recordindex in range(1,self.nrecords):
+            fields=self.CfgLines[recordindex].split(',')
             #print fields[0], fields[1]
             if fields[0] == PlotID:
                 if fields[1] == PlotType:
@@ -57,30 +69,30 @@ class SysResp_plot_params(GL.Plot_Parameters):
                     self.Ytype=str(fields[9])
                     self.DataFile=str(fields[10])
 
-def Setup_Plot(scale):
-    import pylab as pl
-    import numpy as np
-
-    pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
-    pl.subplot(1, 1, 1)
-    #Plot Layout Configuration
-    x0,x1,xtks=350,1050,15
-    y0,y1=1e-3,1.2e0
+    def Setup_Plot(self):
+        import pylab as pl
+        import numpy as np
     
-    pl.xlim(x0,x1)
-    pl.xticks(np.linspace(x0,x1,xtks, endpoint=True))
-    
-    pl.ylim(y0,y1)
-    pl.yscale(scale)
-    
-    pl.grid()
-    pl.tick_params(axis='both', which='major', labelsize=7)
-    
-    pl.ylabel(r"$Normalized$ $Response$",fontsize=7)
-    pl.xlabel(r"$Wavelength (nm)$",fontsize=7)
-    pl.title("Normalized Response",fontsize=9)
-    
-    return 0
+        pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
+        pl.subplot(1, 1, 1)
+        
+        xtks=(self.X1-self.X0)/self.DX+1       
+        pl.xlim(self.X0,self.X1)
+        pl.xticks(np.linspace(self.X0,self.X1,xtks, endpoint=True))
+        
+        ytks=(self.Y1-self.Y0)/self.DY+1       
+        pl.ylim(self.Y0,self.Y1)
+        pl.yticks(np.linspace(self.Y0,self.Y1,ytks, endpoint=True))
+        pl.yscale(self.Ytype)
+        
+        pl.grid()
+        pl.tick_params(axis='both', which='major', labelsize=7)
+        
+        pl.ylabel(r"$Normalized$ $Response$",fontsize=7)
+        pl.xlabel(r"$Wavelength (nm)$",fontsize=7)
+        pl.title("Normalized Response",fontsize=9)
+        
+        return 0
 
 def Draw_with_Conf_Level(Data,scl,clr,lbl):                
 #Plot Layout Configuration
@@ -90,17 +102,9 @@ def Draw_with_Conf_Level(Data,scl,clr,lbl):
     pl.plot(Data[:,0],(Data[:,1]-1.96*Data[:,3])*scl,linewidth=0.2,color=clr)
     #ax.fill_between((Data[:,0]),(Data[:,1]+1.96*Data[:,3])*scl,(Data[:,1]-1.96*Data[:,3])*scl)
     return 0        
-       
-class measurement_list:
-    def __init__(self,MeasurementListFile):
-        #The initial plan is to read ALL records in the observation list
-
-        CfgFile=open(MeasurementListFile,'r')
-        self.CfgLines=CfgFile.readlines()
-        CfgFile.close()
-        self.nrecords=len(self.CfgLines)
-        self.MeasurmentListFile=MeasurementListFile
-
+  
+class measurement_list(readtextfilelines):
+    pass
     def load_all_data(self):
         
         self.MeasTarget=['']   #Keyword for star identification
@@ -198,50 +202,57 @@ def GetObsFileNames(Path,IndexFile):
             
     return FNArray
 
-def Average_Spectrum(drive,ObsList):
-    import numpy as np
-    import scipy
-    import scipy.stats as ST
-    path=drive+"/Astronomy/Python Play/TechniquesLibrary/"
-    print path
-    for i in range(0,len(ObsList.FileList)):
-        print "******** i=",i
-        FNList=GetObsFileNames(path,ObsList.FileList[i])
-        print "********len(FNList)",len(FNList),FNList
-        path=drive+"/Astronomy/Projects/"+ObsList.DataType[i]+"/"+ObsList.DataTarget[i]+"/Spectral Data/1D Spectra/"
-        ###Need loop over data files here!!! "j"
-        for j in range(0,len(FNList)):
-            print "****** j=",j
-            temp1 = scipy.fromfile(file=path+FNList[j], dtype=float, count=-1, sep='\t')    
-            temp2 = scipy.reshape(temp1,[temp1.size/2,2])
-            wave = temp2[:,0]
-            tmpsig=temp2[:,1]
-            print i
-            print temp2.shape
-    
-            if i==0 and j==0:
-                signalarray=np.zeros([tmpsig.size,1])
-                print signalarray.shape
-                signalarray[:,0]=tmpsig
-            else:
-                signalarray=np.insert(signalarray,1,tmpsig,axis=1)
-                print "i>0:",signalarray.shape
-            
-    ZeroIndices=np.where(signalarray <= 0.)
-    signalarray[ZeroIndices]=np.nan
-    #pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
-    #pl.plot(wave,signalarray[:,0])        
-    AvgSignal=np.nanmean(signalarray,axis=1)
-    std=np.nanstd(signalarray,axis=1) 
-    sem=ST.sem(signalarray,axis=1,ddof=0,nan_policy='omit')
+class SpectrumAggregation:
+    def __init__(self,drive,ObsList):
+#def Average_Spectrum(drive,ObsList):
+        import numpy as np
+        import scipy
+        self.path=drive+"/Astronomy/Python Play/TechniquesLibrary/"
+        #print path
+        for i in range(0,len(ObsList.FileList)):
+            print "******** i=",i
+            self.FNList=GetObsFileNames(self.path,ObsList.FileList[i])
+            print "********len(FNList)",len(self.FNList),self.FNList
+            path=drive+"/Astronomy/Projects/"+ObsList.DataType[i]+"/"+ObsList.DataTarget[i]+"/Spectral Data/1D Spectra/"
+            ###Need loop over data files here!!! "j"
+            for j in range(0,len(self.FNList)):
+                print "****** j=",j
+                temp1 = scipy.fromfile(file=path+self.FNList[j], dtype=float, count=-1, sep='\t')    
+                temp2 = scipy.reshape(temp1,[temp1.size/2,2])
+                self.wave = temp2[:,0]
+                tmpsig=temp2[:,1]
+                print i
+                print temp2.shape
         
-    MeanSpec=np.zeros([wave.size,4])
-    MeanSpec[:,0]=wave
-    MeanSpec[:,1]=AvgSignal
-    MeanSpec[:,2]=std
-    MeanSpec[:,3]=sem
-    
-    return MeanSpec
+                if i==0 and j==0:
+                    self.signalarray=np.zeros([tmpsig.size,1])
+                    print self.signalarray.shape
+                    self.signalarray[:,0]=tmpsig
+                else:
+                    print "i>0 self.signalarray.shape:",self.signalarray.shape
+                    print "temp2.shape: ",temp2.shape
+                    print "temp2[0,0]: ",temp2[0,0]
+                    self.signalarray=np.insert(self.signalarray,1,tmpsig,axis=1)
+                    print "i>0 self.signalarray.shape:",self.signalarray.shape
+
+    def ComputeAverageandStats(self):
+        import scipy.stats as ST
+        import numpy as np
+        ZeroIndices=np.where(self.signalarray <= 0.)
+        self.signalarray[ZeroIndices]=np.nan
+        #pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
+        #pl.plot(wave,signalarray[:,0])        
+        AvgSignal=np.nanmean(self.signalarray,axis=1)
+        std=np.nanstd(self.signalarray,axis=1) 
+        sem=ST.sem(self.signalarray,axis=1,ddof=0,nan_policy='omit')
+            
+        self.MeanSpec=np.zeros([self.wave.size,4])
+        self.MeanSpec[:,0]=self.wave
+        self.MeanSpec[:,1]=AvgSignal
+        self.MeanSpec[:,2]=std
+        self.MeanSpec[:,3]=sem
+        
+        return 0
     
 def Compute_Transmission(Response_with_Filter,Response_without_Filter):
     from copy import deepcopy
@@ -254,7 +265,7 @@ def Compute_Transmission(Response_with_Filter,Response_without_Filter):
             (Response_without_Filter[:,3]/Response_without_Filter[:,1])**2,)
     return Transmission
 
-def Compute_EWs(path,outfile,Spectrum_with_Stats):
+def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
 ###############################################################################
 #Label,Type,Start,End,Center,Avg. Response,SEM Response,WAvg.,WEM
 #The Start and End wavelengths are the limits of consideration for the 
@@ -286,15 +297,15 @@ def Compute_EWs(path,outfile,Spectrum_with_Stats):
     for i in range(0,len(List)):       
         StartIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][2]))
         EndIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][3]))
-        List[i][4]=np.nanmean([List[i][2],List[i][3]])
+        List[i][4]=np.nanmean([List[i][2],List[i][3]])*Scale
         #print StartIndex[0],EndIndex[0]
         #print Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1]
-        List[i][5]=np.nanmean(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],1])
+        List[i][5]=np.nanmean(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],1])*Scale
         #List[i][6]=scipy.stats.sem(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1],ddof=0)
         #frac_sem=(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],3])/(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1])
         #test=1./frac_sem**2
         #List[i][7]=np.average(Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1],weights=test)
-        List[i][8]=np.sqrt(np.sum(np.square(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],3])))/Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],3].size
+        List[i][8]=Scale*(np.sqrt(np.sum(np.square(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],3])))/Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],3].size)
         tempstring=','.join(['%.3f' % num for num in List[i][2:9]])
         tempstring=List[i][0]+","+List[i][1]+","+tempstring+",\n"
         if Append:
@@ -307,5 +318,5 @@ def Compute_EWs(path,outfile,Spectrum_with_Stats):
             text_file.write(tempstring)
             text_file.close()
             Append=True
-    print List
+    #print List
     #print test
