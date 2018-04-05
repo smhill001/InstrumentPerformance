@@ -210,15 +210,22 @@ class SpectrumAggregation:
         self.path=drive+"/Astronomy/Python Play/TechniquesLibrary/"
         #print path
         for i in range(0,len(ObsList.FileList)):
-            print "******** i=",i
+            print "******** i=",i,ObsList.FileList[i]
             self.FNList=GetObsFileNames(self.path,ObsList.FileList[i])
             print "********len(FNList)",len(self.FNList),self.FNList
-            path=drive+"/Astronomy/Projects/"+ObsList.DataType[i]+"/"+ObsList.DataTarget[i]+"/Spectral Data/1D Spectra/"
+            if ObsList.DataType[i]=="Reference":
+                path=drive+"/Astronomy/Python Play/SPLibraries/SpectralReferenceFiles/ReferenceLibrary/"
+            else:    
+                path=drive+"/Astronomy/Projects/"+ObsList.DataType[i]+"/"+ObsList.DataTarget[i]+"/Spectral Data/1D Spectra/"
+            
             ###Need loop over data files here!!! "j"
             for j in range(0,len(self.FNList)):
                 print "****** j=",j
-                temp1 = scipy.fromfile(file=path+self.FNList[j], dtype=float, count=-1, sep='\t')    
-                temp2 = scipy.reshape(temp1,[temp1.size/2,2])
+                if ObsList.DataType[i]=="Reference":
+                    temp2 = scipy.loadtxt(path+self.FNList[j], dtype=float, usecols=(0,1))
+                else:
+                    temp1 = scipy.fromfile(file=path+self.FNList[j], dtype=float, count=-1, sep='\t')    
+                    temp2 = scipy.reshape(temp1,[temp1.size/2,2])
                 self.wave = temp2[:,0]
                 tmpsig=temp2[:,1]
                 print i
@@ -234,6 +241,8 @@ class SpectrumAggregation:
                     print "temp2[0,0]: ",temp2[0,0]
                     self.signalarray=np.insert(self.signalarray,1,tmpsig,axis=1)
                     print "i>0 self.signalarray.shape:",self.signalarray.shape
+        if ObsList.DataType[i]=="Reference":
+            self.wave=self.wave/10.
 
     def ComputeAverageandStats(self):
         import scipy.stats as ST
@@ -254,16 +263,21 @@ class SpectrumAggregation:
         
         return 0
     
-def Compute_Transmission(Response_with_Filter,Response_without_Filter):
+def SpectrumMath(Spectrum1,Spectrum2,Operation):
     from copy import deepcopy
     import numpy as np
-    Transmission=deepcopy(Response_without_Filter)
-    Transmission[:,1]=Response_with_Filter[:,1]/Response_without_Filter[:,1]
-    Transmission[:,2]=Transmission[:,1]*np.sqrt((Response_with_Filter[:,2]/Response_with_Filter[:,1])**2+
-            (Response_without_Filter[:,2]/Response_without_Filter[:,1])**2,)
-    Transmission[:,3]=Transmission[:,1]*np.sqrt((Response_with_Filter[:,3]/Response_with_Filter[:,1])**2+
-            (Response_without_Filter[:,3]/Response_without_Filter[:,1])**2,)
-    return Transmission
+    ResultSpectrum=deepcopy(Spectrum1)
+    if Operation == "Divide":
+        ResultSpectrum[:,1]=Spectrum1[:,1]/Spectrum2[:,1]
+    elif Operation == "Multiply":
+        ResultSpectrum[:,1]=Spectrum1[:,1]*Spectrum2[:,1]
+        
+    ResultSpectrum[:,2]=ResultSpectrum[:,1]*np.sqrt((Spectrum1[:,2]/Spectrum1[:,1])**2+
+        (Spectrum2[:,2]/Spectrum2[:,1])**2,)
+    ResultSpectrum[:,3]=ResultSpectrum[:,1]*np.sqrt((Spectrum1[:,3]/Spectrum1[:,1])**2+
+        (Spectrum2[:,3]/Spectrum2[:,1])**2,)
+        
+    return ResultSpectrum
 
 def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
 ###############################################################################
@@ -278,7 +292,17 @@ def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
           ['501OIII','Line  ',496.,502.,0.,0.,0.,0.,0.],
           ['550GRN','Filter',480.,570.,0.,0.,0.,0.,0.],
           ['650RED','Filter',610.,685.,0.,0.,0.,0.,0.],
+          ['650RED-A','Filter',620.,670.,0.,0.,0.,0.,0.],
+          ['656HIA--','Line  ',636.,646.,0.,0.,0.,0.,0.],
+          ['656HIA-','Line  ',649.,652.,0.,0.,0.,0.,0.],
           ['656HIA','Line  ',655.,657.,0.,0.,0.,0.,0.],
+          ['656HIA+','Line  ',661.,664.,0.,0.,0.,0.,0.],
+          ['656HIA++','Line  ',666.,676.,0.,0.,0.,0.,0.],
+          ['658NII--','Line  ',638.,648.,0.,0.,0.,0.,0.],
+          ['658NII-','Line  ',649.,652.,0.,0.,0.,0.,0.],
+          ['658NII','Line  ',657.,659.,0.,0.,0.,0.,0.],
+          ['658NII+','Line  ',663.,666.,0.,0.,0.,0.,0.],
+          ['658NII++','Line  ',668.,678.,0.,0.,0.,0.,0.],
           ['672SII','Line  ',671.,673.,0.,0.,0.,0.,0.],
           ['685NIR','Filter',685.,1050.,0.,0.,0.,0.,0.],
           ['685-742','Filter',685.,742.,0.,0.,0.,0.,0.],
@@ -297,7 +321,7 @@ def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
     for i in range(0,len(List)):       
         StartIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][2]))
         EndIndex=np.where(Spectrum_with_Stats[:,0] == np.float(List[i][3]))
-        List[i][4]=np.nanmean([List[i][2],List[i][3]])*Scale
+        List[i][4]=np.nanmean([List[i][2],List[i][3]])
         #print StartIndex[0],EndIndex[0]
         #print Mean200linespermm1260mm[StartIndex[0]:EndIndex[0],1]
         List[i][5]=np.nanmean(Spectrum_with_Stats[StartIndex[0][0]:EndIndex[0][0],1])*Scale
@@ -320,3 +344,100 @@ def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
             Append=True
     #print List
     #print test
+    
+class manufacturer_camera_data(readtextfilelines):
+    pass
+    def load_all_data(self):
+        
+        self.Wavelength=[0.]   #Keyword for star identification
+        self.ST2000_QE=[0.]           #Target, e.g., component of a multiple star
+        self.ST2000_Norm=[0.]           #UT Date of observation: YYYYMMDDUT
+        self.NObs=0                #Number of observatinos
+        FirstTime=True
+
+        for recordindex in range(1,self.nrecords):
+            fields=self.CfgLines[recordindex].split(',')
+            print fields
+            if FirstTime:
+                self.Wavelength[0]=float(fields[0])
+                self.ST2000_QE[0]=float(fields[1])
+                self.ST2000_Norm[0]=float(fields[2])
+                FirstTime=False
+                self.NObs=1
+            else:
+                self.Wavelength.extend([float(fields[0])])
+                self.ST2000_QE.extend([float(fields[1])])
+                self.ST2000_Norm.extend([float(fields[2])])
+                self.NObs=self.NObs+1
+                
+    def uniform_wave_grid(self):
+        import numpy as np
+        from scipy import interpolate
+        self.wavegrid=np.arange(115,1062.5,0.5,dtype=float)
+        Interp=interpolate.interp1d(self.Wavelength,self.ST2000_Norm,kind='linear', 
+                                    copy=True,bounds_error=False, 
+                                    fill_value=np.NaN,axis=0)  
+        self.griddata=Interp(self.wavegrid)
+                
+class manufacturer_Celestrom_data(readtextfilelines):
+    pass
+    def load_all_data(self):
+        
+        self.Wavelength=[0.]   #Keyword for star identification
+        self.Transmission=[0.]           #Target, e.g., component of a multiple star
+        self.NObs=0                #Number of observatinos
+        FirstTime=True
+
+        for recordindex in range(1,self.nrecords):
+            fields=self.CfgLines[recordindex].split(',')
+            if FirstTime:
+                self.Wavelength[0]=float(fields[0])
+                self.Transmission[0]=float(fields[1])
+                FirstTime=False
+                self.NObs=1
+            else:
+                self.Wavelength.extend([float(fields[0])])
+                self.Transmission.extend([float(fields[1])])
+                self.NObs=self.NObs+1
+
+    def uniform_wave_grid(self):
+        import numpy as np
+        from scipy import interpolate
+        self.wavegrid=np.arange(115,1062.5,0.5,dtype=float)
+        Interp=interpolate.interp1d(self.Wavelength,self.Transmission,kind='linear', 
+                                    copy=True,bounds_error=False, 
+                                    fill_value=np.NaN,axis=0)  
+        self.griddata=Interp(self.wavegrid)
+
+class atmosphere_data(readtextfilelines):
+    pass
+    def load_all_data(self):
+        
+        self.Wavelength=[0.]   #Keyword for star identification
+        self.Transmission=[0.]           #Target, e.g., component of a multiple star
+        self.NormTransmission=[0.]           #Target, e.g., component of a multiple star
+        self.NObs=0                #Number of observatinos
+        FirstTime=True
+
+        for recordindex in range(1,self.nrecords):
+            fields=self.CfgLines[recordindex].split(',')
+            if FirstTime:
+                self.Wavelength[0]=float(fields[0])
+                self.Transmission[0]=float(fields[1])
+                self.NormTransmission[0]=float(fields[2])
+                FirstTime=False
+                self.NObs=1
+            else:
+                self.Wavelength.extend([float(fields[0])])
+                self.Transmission.extend([float(fields[1])])
+                self.NormTransmission.extend([float(fields[2])])
+                self.NObs=self.NObs+1
+
+    def uniform_wave_grid(self):
+        import numpy as np
+        from scipy import interpolate
+        self.wavegrid=np.arange(115,1062.5,0.5,dtype=float)
+        Interp=interpolate.interp1d(self.Wavelength,self.NormTransmission,kind='linear', 
+                                    copy=True,bounds_error=False, 
+                                    fill_value=np.NaN,axis=0)  
+        self.griddata=Interp(self.wavegrid)

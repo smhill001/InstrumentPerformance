@@ -55,6 +55,22 @@ import SysRespLIB as SRL
 path=drive+"/Astronomy/Projects/Techniques/Flux Calibration/"
 # Read and reshape spectral data files    
 
+ManCamData=SRL.manufacturer_camera_data(path+"CameraResponse-ST2000Data.txt")
+ManCamData.load_all_data()
+ManCamData.uniform_wave_grid()
+
+C8_StarBright_Data=SRL.manufacturer_Celestrom_data(path+"CameraResponse - StarBright.txt")
+C8_StarBright_Data.load_all_data()
+C8_StarBright_Data.uniform_wave_grid()
+
+C8_StarBrightXLT_Data=SRL.manufacturer_Celestrom_data(path+"CameraResponse - StarBrightXLT.txt")
+C8_StarBrightXLT_Data.load_all_data()
+C8_StarBrightXLT_Data.uniform_wave_grid()
+
+Atmosphere_Data=SRL.atmosphere_data(path+"CameraResponse - Atmosphere.txt")
+Atmosphere_Data.load_all_data()
+Atmosphere_Data.uniform_wave_grid()
+
 CLRPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
 CLRPlotParams.loadplotparams(drive,"550CLR","TBD")
 CLR550_ObsList=SRL.measurement_list(CLRPlotParams.DataFile)
@@ -87,7 +103,7 @@ NIR685_ObsList=SRL.measurement_list(NIRPlotParams.DataFile)
 NIR685_ObsList.load_all_data()
 MeanNIRtmp=SRL.SpectrumAggregation("f:",NIR685_ObsList)
 MeanNIRtmp.ComputeAverageandStats()
-MeanNIR=MeanNIRtmp.MeanSpec[430:2325,:]
+MeanNIR135mm=MeanNIRtmp.MeanSpec[430:2325,:]
 
 REDPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
 REDPlotParams.loadplotparams(drive,"650RED","TBD")
@@ -95,9 +111,9 @@ RED650_ObsList=SRL.measurement_list(REDPlotParams.DataFile)
 RED650_ObsList.load_all_data()
 MeanREDtmp=SRL.SpectrumAggregation("f:",RED650_ObsList)
 MeanREDtmp.ComputeAverageandStats()
-MeanRED=MeanREDtmp.MeanSpec[430:2325,:]
-tmp=SRL.Compute_EWs(path,"135mm100lpm-650RED-EW",MeanRED,0.69/1.02424)
-np.savetxt(path+'SystemResponseRED-135mm100lpm.txt',MeanRED,delimiter=" ",
+MeanRED135mm=MeanREDtmp.MeanSpec[430:2325,:]
+tmp=SRL.Compute_EWs(path,"135mm100lpm-650RED-EW",MeanRED135mm,0.69/1.02424)
+np.savetxt(path+'SystemResponseRED-135mm100lpm.txt',MeanRED135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
 GRNPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
@@ -106,9 +122,9 @@ GRN550_ObsList=SRL.measurement_list(GRNPlotParams.DataFile)
 GRN550_ObsList.load_all_data()
 MeanGRNtmp=SRL.SpectrumAggregation("f:",GRN550_ObsList)
 MeanGRNtmp.ComputeAverageandStats()
-MeanGRN=MeanGRNtmp.MeanSpec[430:2325,:]
-tmp=SRL.Compute_EWs(path,"135mm100lpm-550GRN-EW",MeanGRN,0.98/1.0224)
-np.savetxt(path+'SystemResponseGRN-135mm100lpm.txt',MeanGRN,delimiter=" ",
+MeanGRN135mm=MeanGRNtmp.MeanSpec[430:2325,:]
+tmp=SRL.Compute_EWs(path,"135mm100lpm-550GRN-EW",MeanGRN135mm,0.98/1.0224)
+np.savetxt(path+'SystemResponseGRN-135mm100lpm.txt',MeanGRN135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
 BLUPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
@@ -117,9 +133,9 @@ BLU450_ObsList=SRL.measurement_list(BLUPlotParams.DataFile)
 BLU450_ObsList.load_all_data()
 MeanBLUtmp=SRL.SpectrumAggregation("f:",BLU450_ObsList)
 MeanBLUtmp.ComputeAverageandStats()
-MeanBLU=MeanBLUtmp.MeanSpec[430:2325,:]
-tmp=SRL.Compute_EWs(path,"135mm100lpm-550BLU-EW",MeanBLU,0.875/1.0224)
-np.savetxt(path+'SystemResponseBLU-135mm100lpm.txt',MeanBLU,delimiter=" ",
+MeanBLU135mm=MeanBLUtmp.MeanSpec[430:2325,:]
+tmp=SRL.Compute_EWs(path,"135mm100lpm-550BLU-EW",MeanBLU135mm,0.875/1.0224)
+np.savetxt(path+'SystemResponseBLU-135mm100lpm.txt',MeanBLU135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
 NUVPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
@@ -128,7 +144,7 @@ NUV380_ObsList=SRL.measurement_list(NUVPlotParams.DataFile)
 NUV380_ObsList.load_all_data()
 MeanNUVtmp=SRL.SpectrumAggregation("f:",NUV380_ObsList)
 MeanNUVtmp.ComputeAverageandStats()
-MeanNUV=MeanNUVtmp.MeanSpec[430:2325,:]
+MeanNUV135mm=MeanNUVtmp.MeanSpec[430:2325,:]
 
 #MAKE ST2000 RESPONSE PLOT#####################################################
 CLRPlotParams.Setup_Plot()
@@ -136,6 +152,38 @@ tmp=SRL.Draw_with_Conf_Level(Mean200linespermm1260mm.MeanSpec,1.0189,'C0','1260m
 tmp=SRL.Draw_with_Conf_Level(Mean100linespermm1260mm.MeanSpec,1.0,'b','1260mm100lpm')
 tmp=SRL.Draw_with_Conf_Level(Mean100linespermm135mm.MeanSpec,1.0244,'C3','135mm100lpm')
 tmp=SRL.Draw_with_Conf_Level(Mean200linespermm135mm.MeanSpec,1.0122,'r','135mm200lpm')
+
+#Plot Mfg. QE -> response to photon counts
+#pl.scatter(ManCamData.Wavelength,ManCamData.ST2000_Norm,
+#           label='ST2000 SBIG QE',s=20,color='b')
+#Plot Mfg. response to energy (~QE/wavelength)
+EnergyResponse=ManCamData.griddata/ManCamData.wavegrid*450.
+
+#pl.scatter(ManCamData.Wavelength,np.array(ManCamData.ST2000_Norm)/np.array(ManCamData.Wavelength)*450.,
+#           label='ST2000 SBIG Ergs',s=20,color='g')
+
+#pl.plot(ManCamData.wavegrid,EnergyResponse,
+#           label='ST2000 SBIG Ergs',linewidth=1.0,color='k')
+
+#pl.plot(Atmosphere_Data.wavegrid,Atmosphere_Data.griddata,
+#           label='ST2000 SBIG Ergs',linewidth=1.0,color='b')
+
+
+#pl.plot(C8_StarBrightXLT_Data.wavegrid,C8_StarBright_Data.griddata*EnergyResponse,
+#           label='StarBright Response',linewidth=1.0,color='k')
+#pl.plot(C8_StarBrightXLT_Data.wavegrid,C8_StarBrightXLT_Data.griddata*EnergyResponse,
+#           label='StarBrightXLT Response',linewidth=1.0,color='k')
+
+pl.plot(C8_StarBright_Data.wavegrid,
+        (C8_StarBright_Data.griddata*EnergyResponse*Atmosphere_Data.griddata)/0.52,
+        label='StarBright Energy Response',linewidth=1.0,color='g')
+pl.plot(C8_StarBright_Data.wavegrid,
+        (C8_StarBright_Data.griddata*ManCamData.griddata*Atmosphere_Data.griddata)/0.62,
+        label='StarBright QE Response',linewidth=1.0,color='k')
+#pl.plot(C8_StarBrightXLT_Data.wavegrid,
+#        (C8_StarBrightXLT_Data.griddata*EnergyResponse*Atmosphere_Data.griddata)/0.6,
+#        label='XLT Model Response',linewidth=1.0,color='r')
+
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
@@ -144,55 +192,85 @@ pylab.savefig(path+'PanchromaticSystemResponse.png',dpi=300)
 #MAKE 135MM-ST2000 PLOT WITH FILTERS###########################################
 CLRPlotParams.Setup_Plot()
 tmp=SRL.Draw_with_Conf_Level(Mean100linespermm135mm.MeanSpec,1.0244,'0.5','135mm100lpm')
-tmp=SRL.Draw_with_Conf_Level(MeanNIR,0.40,'C3','NIR')
-tmp=SRL.Draw_with_Conf_Level(MeanRED,0.690,'r','RED')
-tmp=SRL.Draw_with_Conf_Level(MeanGRN,0.980,'g','GRN')
-tmp=SRL.Draw_with_Conf_Level(MeanBLU,0.875,'b','BLU')
-tmp=SRL.Draw_with_Conf_Level(MeanNUV,0.016,'m','NUV')
+tmp=SRL.Draw_with_Conf_Level(MeanNIR135mm,0.40,'C3','NIR')
+tmp=SRL.Draw_with_Conf_Level(MeanRED135mm,0.690,'r','RED')
+tmp=SRL.Draw_with_Conf_Level(MeanGRN135mm,0.980,'g','GRN')
+tmp=SRL.Draw_with_Conf_Level(MeanBLU135mm,0.875,'b','BLU')
+tmp=SRL.Draw_with_Conf_Level(MeanNUV135mm,0.016,'m','NUV')
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
-pylab.savefig(path+'FilterRelativeSystemResponse.png',dpi=300)
+pylab.savefig(path+'FilterRelativeSystemResponse135mm.png',dpi=300)
 
 #MAKE TRANSMISSION PLOT########################################################
 CLRPlotParams.Setup_Plot()
 #Should be able to make a transmission computing function with two inputs
-print "MeanNIR.shape:",MeanNIR.shape
+print "MeanNIR.shape:",MeanNIR135mm.shape
 
-TransNIR=SRL.Compute_Transmission(MeanNIR,Mean100linespermm135mm.MeanSpec)
+TransNIR=SRL.SpectrumMath(MeanNIR135mm,Mean100linespermm135mm.MeanSpec,"Divide")
 tmp=SRL.Draw_with_Conf_Level(TransNIR,0.40/1.0244,'C3','NIR')
-TransRED=SRL.Compute_Transmission(MeanRED,Mean100linespermm135mm.MeanSpec)
+TransRED=SRL.SpectrumMath(MeanRED135mm,Mean100linespermm135mm.MeanSpec,"Divide")
 tmp=SRL.Draw_with_Conf_Level(TransRED,0.69/1.0244,'r','RED')
-TransGRN=SRL.Compute_Transmission(MeanGRN,Mean100linespermm135mm.MeanSpec)
+TransGRN=SRL.SpectrumMath(MeanGRN135mm,Mean100linespermm135mm.MeanSpec,"Divide")
 tmp=SRL.Draw_with_Conf_Level(TransGRN,0.98/1.0244,'g','GRN')
-TransBLU=SRL.Compute_Transmission(MeanBLU,Mean100linespermm135mm.MeanSpec)
+TransBLU=SRL.SpectrumMath(MeanBLU135mm,Mean100linespermm135mm.MeanSpec,"Divide")
 tmp=SRL.Draw_with_Conf_Level(TransBLU,0.875/1.0244,'b','BLU')
-TransNUV=SRL.Compute_Transmission(MeanNUV,Mean100linespermm135mm.MeanSpec)
+TransNUV=SRL.SpectrumMath(MeanNUV135mm,Mean100linespermm135mm.MeanSpec,"Divide")
 tmp=SRL.Draw_with_Conf_Level(TransNUV,0.016/01.244,'m','NUV')
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
 pylab.savefig(path+'FilterTransmission.png',dpi=300)
 
+MeanNIR1260mm=SRL.SpectrumMath(TransNIR,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanRED1260mm=SRL.SpectrumMath(TransRED,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanGRN1260mm=SRL.SpectrumMath(TransGRN,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanBLU1260mm=SRL.SpectrumMath(TransBLU,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanNUV1260mm=SRL.SpectrumMath(TransNUV,Mean100linespermm1260mm.MeanSpec,"Multiply")
+
+CLRPlotParams.Setup_Plot()
+tmp=SRL.Draw_with_Conf_Level(Mean200linespermm1260mm.MeanSpec,1.0,'0.5','1260mm100lpm')
+tmp=SRL.Draw_with_Conf_Level(MeanNIR1260mm,0.32/1.0244,'C3','NIR')
+tmp=SRL.Draw_with_Conf_Level(MeanRED1260mm,0.62/1.0244,'r','RED')
+tmp=SRL.Draw_with_Conf_Level(MeanGRN1260mm,0.98*0.94/1.0244,'g','GRN')
+tmp=SRL.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'b','BLU')
+tmp=SRL.Draw_with_Conf_Level(MeanNUV1260mm,0.011/01.244,'m','NUV')
+pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
+pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
+            wspace=None, hspace=None)
+pylab.savefig(path+'FilterRelativeSystemResponse1260mm.png',dpi=300)
+
 REDPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(TransRED,0.69/1.0244,'r','RED Transmission')
-tmp=SRL.Draw_with_Conf_Level(MeanRED,0.69,'C3','RED Response')
+tmp=SRL.Draw_with_Conf_Level(TransRED,0.69/1.0244,'k','RED Transmission')
+tmp=SRL.Draw_with_Conf_Level(MeanRED135mm,0.69,'r','RED 135mm Response')
+tmp=SRL.Draw_with_Conf_Level(MeanRED1260mm,0.62/1.0244,'C3','RED 1260mm Response')
+tmp=SRL.Compute_EWs(path,"1260mm200lpm-650RED-EW",MeanRED1260mm,0.62/1.0244)
+np.savetxt(path+'SystemResponseRED-1260mm200lpm.txt',MeanRED1260mm,delimiter=" ",
+           fmt="%10.3F %10.7F %10.7F %10.7F")
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
 pylab.savefig(path+'REDTransmission.png',dpi=300)
 
 GRNPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(TransGRN,0.98/1.0244,'g','GRN Transmission')
-tmp=SRL.Draw_with_Conf_Level(MeanGRN,0.98,'C2','GRN Response')
+tmp=SRL.Draw_with_Conf_Level(TransGRN,0.98/1.0244,'k','GRN Transmission')
+tmp=SRL.Draw_with_Conf_Level(MeanGRN135mm,0.98,'g','GRN 135mmResponse')
+tmp=SRL.Draw_with_Conf_Level(MeanGRN1260mm,0.98*0.94/1.0244,'C2','GRN 1260mm Response')
+tmp=SRL.Compute_EWs(path,"1260mm200lpm-450GRN-EW",MeanGRN1260mm,0.98*0.94/1.0244)
+np.savetxt(path+'SystemResponseGRN-1260mm200lpm.txt',MeanGRN1260mm,delimiter=" ",
+           fmt="%10.3F %10.7F %10.7F %10.7F")
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
 pylab.savefig(path+'GRNTransmission.png',dpi=300)
 
 BLUPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(TransBLU,0.875/1.0244,'b','BLU Transmission')
-tmp=SRL.Draw_with_Conf_Level(MeanBLU,0.875,'C0','BLU Response')
+tmp=SRL.Draw_with_Conf_Level(TransBLU,0.875/1.0244,'k','BLU Transmission')
+tmp=SRL.Draw_with_Conf_Level(MeanBLU135mm,0.875,'C0','BLU135mm Response')
+tmp=SRL.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'C9','BLU 1260mm Response')
+tmp=SRL.Compute_EWs(path,"1260mm200lpm-550BLU-EW",MeanBLU1260mm,0.875/1.0244)
+np.savetxt(path+'SystemResponseBLU-1260mm200lpm.txt',MeanBLU1260mm,delimiter=" ",
+           fmt="%10.3F %10.7F %10.7F %10.7F")
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
