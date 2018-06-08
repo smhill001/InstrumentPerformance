@@ -44,7 +44,7 @@ import sys
 drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play')
 sys.path.append(drive+'\\Astronomy\Python Play\Techniques Library')
-sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
+#sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
 
 import matplotlib.pyplot as pl
 import pylab
@@ -71,7 +71,7 @@ Atmosphere_Data=SRL.atmosphere_data(path+"CameraResponse - Atmosphere.txt")
 Atmosphere_Data.load_all_data()
 Atmosphere_Data.uniform_wave_grid()
 
-CLRPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+CLRPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
 CLRPlotParams.loadplotparams(drive,"550CLR","TBD")
 CLR550_ObsList=SRL.measurement_list(CLRPlotParams.DataFile)
 CLR550_ObsList.load_select_data("1260mm200lpm")
@@ -97,7 +97,7 @@ Mean200linespermm135mm=SRL.SpectrumAggregation("f:",CLR550_ObsList)
 Mean200linespermm135mm.ComputeAverageandStats()
 
 #RETRIEVE FILTER RESPONSES#####################################################
-NIRPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+NIRPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
 NIRPlotParams.loadplotparams(drive,"685NIR","TBD")
 NIR685_ObsList=SRL.measurement_list(NIRPlotParams.DataFile)
 NIR685_ObsList.load_all_data()
@@ -105,7 +105,7 @@ MeanNIRtmp=SRL.SpectrumAggregation("f:",NIR685_ObsList)
 MeanNIRtmp.ComputeAverageandStats()
 MeanNIR135mm=MeanNIRtmp.MeanSpec[430:2325,:]
 
-REDPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+REDPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
 REDPlotParams.loadplotparams(drive,"650RED","TBD")
 RED650_ObsList=SRL.measurement_list(REDPlotParams.DataFile)
 RED650_ObsList.load_all_data()
@@ -116,7 +116,7 @@ tmp=SRL.Compute_EWs(path,"135mm100lpm-650RED-EW",MeanRED135mm,0.69/1.02424)
 np.savetxt(path+'SystemResponseRED-135mm100lpm.txt',MeanRED135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-GRNPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+GRNPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
 GRNPlotParams.loadplotparams(drive,"550GRN","TBD")
 GRN550_ObsList=SRL.measurement_list(GRNPlotParams.DataFile)
 GRN550_ObsList.load_all_data()
@@ -127,7 +127,7 @@ tmp=SRL.Compute_EWs(path,"135mm100lpm-550GRN-EW",MeanGRN135mm,0.98/1.0224)
 np.savetxt(path+'SystemResponseGRN-135mm100lpm.txt',MeanGRN135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-BLUPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+BLUPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
 BLUPlotParams.loadplotparams(drive,"450BLU","TBD")
 BLU450_ObsList=SRL.measurement_list(BLUPlotParams.DataFile)
 BLU450_ObsList.load_all_data()
@@ -138,7 +138,7 @@ tmp=SRL.Compute_EWs(path,"135mm100lpm-550BLU-EW",MeanBLU135mm,0.875/1.0224)
 np.savetxt(path+'SystemResponseBLU-135mm100lpm.txt',MeanBLU135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-NUVPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+NUVPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
 NUVPlotParams.loadplotparams(drive,"380NUV","TBD")
 NUV380_ObsList=SRL.measurement_list(NUVPlotParams.DataFile)
 NUV380_ObsList.load_all_data()
@@ -247,6 +247,8 @@ tmp=SRL.Draw_with_Conf_Level(MeanRED1260mm,0.62/1.0244,'C3','RED 1260mm Response
 tmp=SRL.Compute_EWs(path,"1260mm200lpm-650RED-EW",MeanRED1260mm,0.62/1.0244)
 np.savetxt(path+'SystemResponseRED-1260mm200lpm.txt',MeanRED1260mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
+np.savetxt(path+'TransmissionRED.txt',TransRED,delimiter=" ",
+           fmt="%10.3F %10.7F %10.7F %10.7F")
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
@@ -270,6 +272,18 @@ tmp=SRL.Draw_with_Conf_Level(MeanBLU135mm,0.875,'C0','BLU135mm Response')
 tmp=SRL.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'C9','BLU 1260mm Response')
 tmp=SRL.Compute_EWs(path,"1260mm200lpm-550BLU-EW",MeanBLU1260mm,0.875/1.0244)
 np.savetxt(path+'SystemResponseBLU-1260mm200lpm.txt',MeanBLU1260mm,delimiter=" ",
+           fmt="%10.3F %10.7F %10.7F %10.7F")
+pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
+pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
+            wspace=None, hspace=None)
+pylab.savefig(path+'BLUTransmission.png',dpi=300)
+
+NUVPlotParams.Setup_Plot()
+tmp=SRL.Draw_with_Conf_Level(MeanNUV135mm,1.0,'k','NUV Response')
+#tmp=SRL.Draw_with_Conf_Level(MeanBLU135mm,0.875,'C0','BLU135mm Response')
+#tmp=SRL.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'C9','BLU 1260mm Response')
+#tmp=SRL.Compute_EWs(path,"1260mm200lpm-550BLU-EW",MeanBLU1260mm,0.875/1.0244)
+np.savetxt(path+'SystemResponseNUV-1260mm200lpm.txt',MeanBLU1260mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,

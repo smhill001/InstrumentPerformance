@@ -1,4 +1,6 @@
 MeasTarget,DataType,DataTarget,DateUT,Optics,Camera,Grating,FileList
+O_Stars,Reference,O_Stars,NA,NA,NA,NA,O_Stars.txt,
+B_Stars,Reference,B_Stars,NA,NA,NA,NA,B_Stars.txt,
 A_Stars,Reference,A_Stars,NA,NA,NA,NA,A_Stars.txt,
 F_Stars,Reference,F_Stars,NA,NA,NA,NA,F_Stars.txt,
 G_Stars,Reference,G_Stars,NA,NA,NA,NA,G_Stars.txt,

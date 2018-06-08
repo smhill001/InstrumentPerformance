@@ -25,74 +25,10 @@ Update 2/11/2018
 """
 import sys
 drive='f:'
-sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
+sys.path.append(drive+'\\Astronomy\Python Play\Util')
 
-class readtextfilelines:
-    def __init__(self,FiletoRead):
-        #Read ALL records in a text file. No path info is needed because
-        #  it reads from the working directory. This may or may not be
-        #  a good general working assumption.
-        CfgFile=open(FiletoRead,'r')
-        self.CfgLines=CfgFile.readlines()
-        CfgFile.close()
-        self.nrecords=len(self.CfgLines)
-        self.FiletoRead=FiletoRead
+import ConfigFiles as CF
 
-class SysResp_plot_params(readtextfilelines):
-    """
-    This class builds on the base class to add parameters specific to
-    HII plots. In this case, there are no additions, just the code to
-    populate the object.
-    
-    SMH 1/11/18
-    """
-    pass
-    def loadplotparams(self,drive,PlotID,PlotType):
-        #View has two options: raw or flux?
-
-        self.ID=PlotID
-
-        for recordindex in range(1,self.nrecords):
-            fields=self.CfgLines[recordindex].split(',')
-            #print fields[0], fields[1]
-            if fields[0] == PlotID:
-                if fields[1] == PlotType:
-                    #print "In first if, fields[1]",fields[:]
-                    self.PlotType=str(fields[1])
-                    self.X0=float(fields[2])
-                    self.X1=float(fields[3])
-                    self.DX=float(fields[4])
-                    self.Xtype=str(fields[5])
-                    self.Y0=float(fields[6])
-                    self.Y1=float(fields[7])
-                    self.DY=float(fields[8])
-                    self.Ytype=str(fields[9])
-                    self.DataFile=str(fields[10])
-
-    def Setup_Plot(self):
-        import pylab as pl
-        import numpy as np
-    
-        pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
-        pl.subplot(1, 1, 1)
-        
-        xtks=(self.X1-self.X0)/self.DX+1       
-        pl.xlim(self.X0,self.X1)
-        pl.xticks(np.linspace(self.X0,self.X1,xtks, endpoint=True))
-        
-        ytks=(self.Y1-self.Y0)/self.DY+1       
-        pl.ylim(self.Y0,self.Y1)
-        pl.yticks(np.linspace(self.Y0,self.Y1,ytks, endpoint=True))
-        pl.yscale(self.Ytype)
-        
-        pl.grid()
-        pl.tick_params(axis='both', which='major', labelsize=7)
-        
-        pl.ylabel(r"$Normalized$ $Response$",fontsize=7)
-        pl.xlabel(r"$Wavelength (nm)$",fontsize=7)
-        pl.title("Normalized Response",fontsize=9)
-        
-        return 0
 
 def Draw_with_Conf_Level(Data,scl,clr,lbl):                
 #Plot Layout Configuration
@@ -103,7 +39,7 @@ def Draw_with_Conf_Level(Data,scl,clr,lbl):
     #ax.fill_between((Data[:,0]),(Data[:,1]+1.96*Data[:,3])*scl,(Data[:,1]-1.96*Data[:,3])*scl)
     return 0        
   
-class measurement_list(readtextfilelines):
+class measurement_list(CF.readtextfilelines):
     pass
     def load_all_data(self):
         
@@ -115,7 +51,7 @@ class measurement_list(readtextfilelines):
         self.Camera=['']       #Instrument code, to be used for aperture
         self.Grating=['']    #Grating 100lpm or 200lpm or None
         self.FileList=['']         #List of observation image files (FITS)
-        self.NObs=0                #Number of observatinos
+        self.NObs=0               #Number of observatinos
         FirstTime=True
 
         for recordindex in range(1,self.nrecords):
@@ -271,7 +207,7 @@ def SpectrumMath(Spectrum1,Spectrum2,Operation):
         ResultSpectrum[:,1]=Spectrum1[:,1]/Spectrum2[:,1]
     elif Operation == "Multiply":
         ResultSpectrum[:,1]=Spectrum1[:,1]*Spectrum2[:,1]
-        
+    #Combine uncertainty arrays in quadrature
     ResultSpectrum[:,2]=ResultSpectrum[:,1]*np.sqrt((Spectrum1[:,2]/Spectrum1[:,1])**2+
         (Spectrum2[:,2]/Spectrum2[:,1])**2,)
     ResultSpectrum[:,3]=ResultSpectrum[:,1]*np.sqrt((Spectrum1[:,3]/Spectrum1[:,1])**2+
@@ -345,7 +281,7 @@ def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
     #print List
     #print test
     
-class manufacturer_camera_data(readtextfilelines):
+class manufacturer_camera_data(CF.readtextfilelines):
     pass
     def load_all_data(self):
         
@@ -379,7 +315,7 @@ class manufacturer_camera_data(readtextfilelines):
                                     fill_value=np.NaN,axis=0)  
         self.griddata=Interp(self.wavegrid)
                 
-class manufacturer_Celestrom_data(readtextfilelines):
+class manufacturer_Celestrom_data(CF.readtextfilelines):
     pass
     def load_all_data(self):
         
@@ -409,7 +345,7 @@ class manufacturer_Celestrom_data(readtextfilelines):
                                     fill_value=np.NaN,axis=0)  
         self.griddata=Interp(self.wavegrid)
 
-class atmosphere_data(readtextfilelines):
+class atmosphere_data(CF.readtextfilelines):
     pass
     def load_all_data(self):
         

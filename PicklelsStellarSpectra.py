@@ -54,6 +54,17 @@ import SysRespLIB as SRL
 #RETRIEVE FILTER REGION REFERENCE SPECTRA######################################
 REDPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
 REDPlotParams.loadplotparams(drive,"PicklesRED","TBD")
+#REDPlotParams.loadplotparams(drive,"PicklesREDLines","TBD")
+
+REDO_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
+REDO_FilesList.load_select_data("O_Stars")
+MeanREDO=SRL.SpectrumAggregation("f:",REDO_FilesList)
+MeanREDO.ComputeAverageandStats()
+
+REDB_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
+REDB_FilesList.load_select_data("B_Stars")
+MeanREDB=SRL.SpectrumAggregation("f:",REDB_FilesList)
+MeanREDB.ComputeAverageandStats()
 
 REDA_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDA_FilesList.load_select_data("A_Stars")
@@ -82,10 +93,20 @@ MeanREDM.ComputeAverageandStats()
 
 #MAKE REFERENCE PLOT#####################################################
 REDPlotParams.Setup_Plot()
+tmp=SRL.Draw_with_Conf_Level(MeanREDO.MeanSpec,1.82,'k','O Stars')
+tmp=SRL.Draw_with_Conf_Level(MeanREDB.MeanSpec,1.66,'C9','B Stars')
+tmp=SRL.Draw_with_Conf_Level(MeanREDA.MeanSpec,1.48,'C0','A Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDF.MeanSpec,1.33,'m','F Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.12,'b','G Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDK.MeanSpec,0.88,'g','K Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDM.MeanSpec,0.42,'r','M Stars')
+
+pl.plot([654.8,654.8],[0.,2.],'C1',linestyle='--',label="NII 654.8 nm",linewidth=1.0)
+pl.plot([656.3,656.3],[0.,2.],'k',linestyle='--',label="HI 656.3 nm",linewidth=1.0)
+pl.plot([658.3,658.3],[0.,2.],'C1',linestyle='--',linewidth=1.0)
+pl.plot([671.6,671.6],[0.,2.],'C3',linestyle='--',label="SII 671.6 nm",linewidth=1.0)
+pl.plot([673.1,673.1],[0.,2.],'C3',linestyle='--',linewidth=1.0)
+
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
@@ -99,6 +120,11 @@ GRNPlotParams.Setup_Plot()
 tmp=SRL.Draw_with_Conf_Level(MeanREDF.MeanSpec,1.0,'m','F Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.0,'b','G Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDK.MeanSpec,1.0,'g','K Stars')
+
+pl.plot([486.0,486.0],[0.,2.],'b',linestyle='--',label="HI 486.0 nm",linewidth=1.0)
+pl.plot([496.0,496.0],[0.,2.],'g',linestyle='--',label="OIII 496 nm",linewidth=1.0)
+pl.plot([500.7,500.7],[0.,2.],'g',linestyle='--',linewidth=1.0)
+
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
@@ -113,6 +139,11 @@ BLUPlotParams.Setup_Plot()
 tmp=SRL.Draw_with_Conf_Level(MeanREDF.MeanSpec,0.72,'m','F Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.0,'b','G Stars')
 tmp=SRL.Draw_with_Conf_Level(MeanREDK.MeanSpec,1.33,'g','K Stars')
+
+pl.plot([486.0,486.0],[0.,2.],'b',linestyle='--',label="HI 486.0 nm",linewidth=1.0)
+pl.plot([496.0,496.0],[0.,2.],'g',linestyle='--',label="OIII 496 nm",linewidth=1.0)
+pl.plot([500.7,500.7],[0.,2.],'g',linestyle='--',linewidth=1.0)
+
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)

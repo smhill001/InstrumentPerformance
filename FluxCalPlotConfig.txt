@@ -6,7 +6,8 @@ PlotID,PlotType,X0,X1,DX,Xtype,Y0,Y1,DY,Ytype,DataList
 380NUV,TBD,350,1050,50,Linear,0.,1.2e0,0.2,Linear,380NUV_ObsFiles.txt,
 550CLR,TBD,350,1050,50,Linear,0.,1.2e0,0.2,Linear,550CLR_ObsFiles.txt,
 #550CLR,TBD,350,1050,50,Linear,0.,1.2e0,0.2,Linear,656HIA_ObsFiles.txt,
-PicklesRED,TBD,550,750,10,Linear,0.,2.0e0,0.2,Linear,PicklesREDFiles.txt,
-PicklesGRN,TBD,450,650,10,Linear,0.,2.0e0,0.2,Linear,PicklesREDFiles.txt,
-PicklesBLU,TBD,350,550,10,Linear,0.,2.0e0,0.2,Linear,PicklesREDFiles.txt,
+PicklesRED,TBD,600,700,10,Linear,0.5,1.5,0.1,Linear,PicklesREDFiles.txt,
+PicklesREDLines,TBD,650,680,5,Linear,0.5,1.5,0.1,Linear,PicklesREDFiles.txt,
+PicklesGRN,TBD,475,575,10,Linear,0.,2.0e0,0.2,Linear,PicklesREDFiles.txt,
+PicklesBLU,TBD,410,510,10,Linear,0.,2.0e0,0.2,Linear,PicklesREDFiles.txt,
 
