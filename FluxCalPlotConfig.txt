@@ -10,4 +10,3 @@ PicklesRED,TBD,600,700,10,Linear,0.5,1.5,0.1,Linear,PicklesREDFiles.txt,
 PicklesREDLines,TBD,650,680,5,Linear,0.5,1.5,0.1,Linear,PicklesREDFiles.txt,
 PicklesGRN,TBD,475,575,10,Linear,0.,2.0e0,0.2,Linear,PicklesREDFiles.txt,
 PicklesBLU,TBD,410,510,10,Linear,0.,2.0e0,0.2,Linear,PicklesREDFiles.txt,
-

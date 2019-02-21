@@ -44,13 +44,16 @@ import sys
 drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play')
 sys.path.append(drive+'\\Astronomy\Python Play\Techniques Library')
+sys.path.append(drive+'\\Astronomy\Python Play\SpectroPhotometry\Spectroscopy')
 #sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
 
 import matplotlib.pyplot as pl
 import pylab
 import numpy as np
 import SysRespLIB as SRL
-
+#import ConfigFiles as CF
+import PlotUtils as PU
+import GeneralSpecUtils as GSU
 #RETRIEVE ST2000 RESPONSES#####################################################
 path=drive+"/Astronomy/Projects/Techniques/Flux Calibration/"
 # Read and reshape spectral data files    
@@ -71,87 +74,87 @@ Atmosphere_Data=SRL.atmosphere_data(path+"CameraResponse - Atmosphere.txt")
 Atmosphere_Data.load_all_data()
 Atmosphere_Data.uniform_wave_grid()
 
-CLRPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
+CLRPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 CLRPlotParams.loadplotparams(drive,"550CLR","TBD")
 CLR550_ObsList=SRL.measurement_list(CLRPlotParams.DataFile)
 CLR550_ObsList.load_select_data("1260mm200lpm")
-Mean200linespermm1260mm=SRL.SpectrumAggregation("f:",CLR550_ObsList)
+Mean200linespermm1260mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean200linespermm1260mm.ComputeAverageandStats()
 tmp=SRL.Compute_EWs(path,"1260mm200lpm-550CLR-EW",Mean200linespermm1260mm.MeanSpec,1.0189)
 np.savetxt(path+'SystemResponseCLR-1260mm200lpm.txt',Mean200linespermm1260mm.MeanSpec,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
 CLR550_ObsList.load_select_data("1260mm100lpm")
-Mean100linespermm1260mm=SRL.SpectrumAggregation("f:",CLR550_ObsList)
+Mean100linespermm1260mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean100linespermm1260mm.ComputeAverageandStats()
 
 CLR550_ObsList.load_select_data("135mm100lpm")
-Mean100linespermm135mm=SRL.SpectrumAggregation("f:",CLR550_ObsList)
+Mean100linespermm135mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean100linespermm135mm.ComputeAverageandStats()
 tmp=SRL.Compute_EWs(path,"135mm100lpm-550CLR-EW",Mean100linespermm135mm.MeanSpec,1.0224)
 np.savetxt(path+'SystemResponseCLR-135mm100lpm.txt',Mean100linespermm135mm.MeanSpec,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
 CLR550_ObsList.load_select_data("135mm200lpm")
-Mean200linespermm135mm=SRL.SpectrumAggregation("f:",CLR550_ObsList)
+Mean200linespermm135mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean200linespermm135mm.ComputeAverageandStats()
 
 #RETRIEVE FILTER RESPONSES#####################################################
-NIRPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
+NIRPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 NIRPlotParams.loadplotparams(drive,"685NIR","TBD")
 NIR685_ObsList=SRL.measurement_list(NIRPlotParams.DataFile)
 NIR685_ObsList.load_all_data()
-MeanNIRtmp=SRL.SpectrumAggregation("f:",NIR685_ObsList)
+MeanNIRtmp=GSU.SpectrumAggregation("f:",NIR685_ObsList)
 MeanNIRtmp.ComputeAverageandStats()
 MeanNIR135mm=MeanNIRtmp.MeanSpec[430:2325,:]
 
-REDPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
+REDPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 REDPlotParams.loadplotparams(drive,"650RED","TBD")
 RED650_ObsList=SRL.measurement_list(REDPlotParams.DataFile)
 RED650_ObsList.load_all_data()
-MeanREDtmp=SRL.SpectrumAggregation("f:",RED650_ObsList)
+MeanREDtmp=GSU.SpectrumAggregation("f:",RED650_ObsList)
 MeanREDtmp.ComputeAverageandStats()
 MeanRED135mm=MeanREDtmp.MeanSpec[430:2325,:]
 tmp=SRL.Compute_EWs(path,"135mm100lpm-650RED-EW",MeanRED135mm,0.69/1.02424)
 np.savetxt(path+'SystemResponseRED-135mm100lpm.txt',MeanRED135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-GRNPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
+GRNPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 GRNPlotParams.loadplotparams(drive,"550GRN","TBD")
 GRN550_ObsList=SRL.measurement_list(GRNPlotParams.DataFile)
 GRN550_ObsList.load_all_data()
-MeanGRNtmp=SRL.SpectrumAggregation("f:",GRN550_ObsList)
+MeanGRNtmp=GSU.SpectrumAggregation("f:",GRN550_ObsList)
 MeanGRNtmp.ComputeAverageandStats()
 MeanGRN135mm=MeanGRNtmp.MeanSpec[430:2325,:]
 tmp=SRL.Compute_EWs(path,"135mm100lpm-550GRN-EW",MeanGRN135mm,0.98/1.0224)
 np.savetxt(path+'SystemResponseGRN-135mm100lpm.txt',MeanGRN135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-BLUPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
+BLUPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 BLUPlotParams.loadplotparams(drive,"450BLU","TBD")
 BLU450_ObsList=SRL.measurement_list(BLUPlotParams.DataFile)
 BLU450_ObsList.load_all_data()
-MeanBLUtmp=SRL.SpectrumAggregation("f:",BLU450_ObsList)
+MeanBLUtmp=GSU.SpectrumAggregation("f:",BLU450_ObsList)
 MeanBLUtmp.ComputeAverageandStats()
 MeanBLU135mm=MeanBLUtmp.MeanSpec[430:2325,:]
 tmp=SRL.Compute_EWs(path,"135mm100lpm-550BLU-EW",MeanBLU135mm,0.875/1.0224)
 np.savetxt(path+'SystemResponseBLU-135mm100lpm.txt',MeanBLU135mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-NUVPlotParams=SRL.CF.PlotSetup("FluxCalPlotConfig.txt")
+NUVPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 NUVPlotParams.loadplotparams(drive,"380NUV","TBD")
 NUV380_ObsList=SRL.measurement_list(NUVPlotParams.DataFile)
 NUV380_ObsList.load_all_data()
-MeanNUVtmp=SRL.SpectrumAggregation("f:",NUV380_ObsList)
+MeanNUVtmp=GSU.SpectrumAggregation("f:",NUV380_ObsList)
 MeanNUVtmp.ComputeAverageandStats()
 MeanNUV135mm=MeanNUVtmp.MeanSpec[430:2325,:]
 
 #MAKE ST2000 RESPONSE PLOT#####################################################
 CLRPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(Mean200linespermm1260mm.MeanSpec,1.0189,'C0','1260mm200lpm')
-tmp=SRL.Draw_with_Conf_Level(Mean100linespermm1260mm.MeanSpec,1.0,'b','1260mm100lpm')
-tmp=SRL.Draw_with_Conf_Level(Mean100linespermm135mm.MeanSpec,1.0244,'C3','135mm100lpm')
-tmp=SRL.Draw_with_Conf_Level(Mean200linespermm135mm.MeanSpec,1.0122,'r','135mm200lpm')
+tmp=PU.Draw_with_Conf_Level(Mean200linespermm1260mm.MeanSpec,1.0189,'C0','1260mm200lpm')
+tmp=PU.Draw_with_Conf_Level(Mean100linespermm1260mm.MeanSpec,1.0,'b','1260mm100lpm')
+tmp=PU.Draw_with_Conf_Level(Mean100linespermm135mm.MeanSpec,1.0244,'C3','135mm100lpm')
+tmp=PU.Draw_with_Conf_Level(Mean200linespermm135mm.MeanSpec,1.0122,'r','135mm200lpm')
 
 #Plot Mfg. QE -> response to photon counts
 #pl.scatter(ManCamData.Wavelength,ManCamData.ST2000_Norm,
@@ -191,12 +194,12 @@ pylab.savefig(path+'PanchromaticSystemResponse.png',dpi=300)
 
 #MAKE 135MM-ST2000 PLOT WITH FILTERS###########################################
 CLRPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(Mean100linespermm135mm.MeanSpec,1.0244,'0.5','135mm100lpm')
-tmp=SRL.Draw_with_Conf_Level(MeanNIR135mm,0.40,'C3','NIR')
-tmp=SRL.Draw_with_Conf_Level(MeanRED135mm,0.690,'r','RED')
-tmp=SRL.Draw_with_Conf_Level(MeanGRN135mm,0.980,'g','GRN')
-tmp=SRL.Draw_with_Conf_Level(MeanBLU135mm,0.875,'b','BLU')
-tmp=SRL.Draw_with_Conf_Level(MeanNUV135mm,0.016,'m','NUV')
+tmp=PU.Draw_with_Conf_Level(Mean100linespermm135mm.MeanSpec,1.0244,'0.5','135mm100lpm')
+tmp=PU.Draw_with_Conf_Level(MeanNIR135mm,0.40,'C3','NIR')
+tmp=PU.Draw_with_Conf_Level(MeanRED135mm,0.690,'r','RED')
+tmp=PU.Draw_with_Conf_Level(MeanGRN135mm,0.980,'g','GRN')
+tmp=PU.Draw_with_Conf_Level(MeanBLU135mm,0.875,'b','BLU')
+tmp=PU.Draw_with_Conf_Level(MeanNUV135mm,0.016,'m','NUV')
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
@@ -207,43 +210,44 @@ CLRPlotParams.Setup_Plot()
 #Should be able to make a transmission computing function with two inputs
 print "MeanNIR.shape:",MeanNIR135mm.shape
 
-TransNIR=SRL.SpectrumMath(MeanNIR135mm,Mean100linespermm135mm.MeanSpec,"Divide")
-tmp=SRL.Draw_with_Conf_Level(TransNIR,0.40/1.0244,'C3','NIR')
-TransRED=SRL.SpectrumMath(MeanRED135mm,Mean100linespermm135mm.MeanSpec,"Divide")
-tmp=SRL.Draw_with_Conf_Level(TransRED,0.69/1.0244,'r','RED')
-TransGRN=SRL.SpectrumMath(MeanGRN135mm,Mean100linespermm135mm.MeanSpec,"Divide")
-tmp=SRL.Draw_with_Conf_Level(TransGRN,0.98/1.0244,'g','GRN')
-TransBLU=SRL.SpectrumMath(MeanBLU135mm,Mean100linespermm135mm.MeanSpec,"Divide")
-tmp=SRL.Draw_with_Conf_Level(TransBLU,0.875/1.0244,'b','BLU')
-TransNUV=SRL.SpectrumMath(MeanNUV135mm,Mean100linespermm135mm.MeanSpec,"Divide")
-tmp=SRL.Draw_with_Conf_Level(TransNUV,0.016/01.244,'m','NUV')
+TransNIR=GSU.SpectrumMath(MeanNIR135mm,Mean100linespermm135mm.MeanSpec,"Divide")
+tmp=PU.Draw_with_Conf_Level(TransNIR,0.40/1.0244,'C3','NIR')
+TransRED=GSU.SpectrumMath(MeanRED135mm,Mean100linespermm135mm.MeanSpec,"Divide")
+tmp=PU.Draw_with_Conf_Level(TransRED,0.69/1.0244,'r','RED')
+TransGRN=GSU.SpectrumMath(MeanGRN135mm,Mean100linespermm135mm.MeanSpec,"Divide")
+tmp=PU.Draw_with_Conf_Level(TransGRN,0.98/1.0244,'g','GRN')
+TransBLU=GSU.SpectrumMath(MeanBLU135mm,Mean100linespermm135mm.MeanSpec,"Divide")
+tmp=PU.Draw_with_Conf_Level(TransBLU,0.875/1.0244,'b','BLU')
+TransNUV=GSU.SpectrumMath(MeanNUV135mm,Mean100linespermm135mm.MeanSpec,"Divide")
+tmp=PU.Draw_with_Conf_Level(TransNUV,0.016/01.244,'m','NUV')
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
 pylab.savefig(path+'FilterTransmission.png',dpi=300)
 
-MeanNIR1260mm=SRL.SpectrumMath(TransNIR,Mean100linespermm1260mm.MeanSpec,"Multiply")
-MeanRED1260mm=SRL.SpectrumMath(TransRED,Mean100linespermm1260mm.MeanSpec,"Multiply")
-MeanGRN1260mm=SRL.SpectrumMath(TransGRN,Mean100linespermm1260mm.MeanSpec,"Multiply")
-MeanBLU1260mm=SRL.SpectrumMath(TransBLU,Mean100linespermm1260mm.MeanSpec,"Multiply")
-MeanNUV1260mm=SRL.SpectrumMath(TransNUV,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanNIR1260mm=GSU.SpectrumMath(TransNIR,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanRED1260mm=GSU.SpectrumMath(TransRED,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanGRN1260mm=GSU.SpectrumMath(TransGRN,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanBLU1260mm=GSU.SpectrumMath(TransBLU,Mean100linespermm1260mm.MeanSpec,"Multiply")
+MeanNUV1260mm=GSU.SpectrumMath(TransNUV,Mean100linespermm1260mm.MeanSpec,"Multiply")
 
 CLRPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(Mean200linespermm1260mm.MeanSpec,1.0,'0.5','1260mm100lpm')
-tmp=SRL.Draw_with_Conf_Level(MeanNIR1260mm,0.32/1.0244,'C3','NIR')
-tmp=SRL.Draw_with_Conf_Level(MeanRED1260mm,0.62/1.0244,'r','RED')
-tmp=SRL.Draw_with_Conf_Level(MeanGRN1260mm,0.98*0.94/1.0244,'g','GRN')
-tmp=SRL.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'b','BLU')
-tmp=SRL.Draw_with_Conf_Level(MeanNUV1260mm,0.011/01.244,'m','NUV')
+tmp=PU.Draw_with_Conf_Level(Mean200linespermm1260mm.MeanSpec,1.0,'0.5','1260mm100lpm')
+tmp=PU.Draw_with_Conf_Level(MeanNIR1260mm,0.32/1.0244,'C3','NIR')
+tmp=PU.Draw_with_Conf_Level(MeanRED1260mm,0.62/1.0244,'r','RED')
+tmp=PU.Draw_with_Conf_Level(MeanGRN1260mm,0.98*0.94/1.0244,'g','GRN')
+tmp=PU.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'b','BLU')
+tmp=PU.Draw_with_Conf_Level(MeanNUV1260mm,0.011/01.244,'m','NUV')
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
 pylab.savefig(path+'FilterRelativeSystemResponse1260mm.png',dpi=300)
 
 REDPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(TransRED,0.69/1.0244,'k','RED Transmission')
-tmp=SRL.Draw_with_Conf_Level(MeanRED135mm,0.69,'r','RED 135mm Response')
-tmp=SRL.Draw_with_Conf_Level(MeanRED1260mm,0.62/1.0244,'C3','RED 1260mm Response')
+print "SHAPE: ",TransRED.shape
+tmp=PU.Draw_with_Conf_Level(TransRED,0.69/1.0244,'k','RED Transmission')
+tmp=PU.Draw_with_Conf_Level(MeanRED135mm,0.69,'r','RED 135mm Response')
+tmp=PU.Draw_with_Conf_Level(MeanRED1260mm,0.62/1.0244,'C3','RED 1260mm Response')
 tmp=SRL.Compute_EWs(path,"1260mm200lpm-650RED-EW",MeanRED1260mm,0.62/1.0244)
 np.savetxt(path+'SystemResponseRED-1260mm200lpm.txt',MeanRED1260mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
@@ -255,9 +259,9 @@ pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
 pylab.savefig(path+'REDTransmission.png',dpi=300)
 
 GRNPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(TransGRN,0.98/1.0244,'k','GRN Transmission')
-tmp=SRL.Draw_with_Conf_Level(MeanGRN135mm,0.98,'g','GRN 135mmResponse')
-tmp=SRL.Draw_with_Conf_Level(MeanGRN1260mm,0.98*0.94/1.0244,'C2','GRN 1260mm Response')
+tmp=PU.Draw_with_Conf_Level(TransGRN,0.98/1.0244,'k','GRN Transmission')
+tmp=PU.Draw_with_Conf_Level(MeanGRN135mm,0.98,'g','GRN 135mmResponse')
+tmp=PU.Draw_with_Conf_Level(MeanGRN1260mm,0.98*0.94/1.0244,'C2','GRN 1260mm Response')
 tmp=SRL.Compute_EWs(path,"1260mm200lpm-450GRN-EW",MeanGRN1260mm,0.98*0.94/1.0244)
 np.savetxt(path+'SystemResponseGRN-1260mm200lpm.txt',MeanGRN1260mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
@@ -267,9 +271,9 @@ pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
 pylab.savefig(path+'GRNTransmission.png',dpi=300)
 
 BLUPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(TransBLU,0.875/1.0244,'k','BLU Transmission')
-tmp=SRL.Draw_with_Conf_Level(MeanBLU135mm,0.875,'C0','BLU135mm Response')
-tmp=SRL.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'C9','BLU 1260mm Response')
+tmp=PU.Draw_with_Conf_Level(TransBLU,0.875/1.0244,'k','BLU Transmission')
+tmp=PU.Draw_with_Conf_Level(MeanBLU135mm,0.875,'C0','BLU135mm Response')
+tmp=PU.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'C9','BLU 1260mm Response')
 tmp=SRL.Compute_EWs(path,"1260mm200lpm-550BLU-EW",MeanBLU1260mm,0.875/1.0244)
 np.savetxt(path+'SystemResponseBLU-1260mm200lpm.txt',MeanBLU1260mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
@@ -279,13 +283,13 @@ pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
 pylab.savefig(path+'BLUTransmission.png',dpi=300)
 
 NUVPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(MeanNUV135mm,1.0,'k','NUV Response')
-#tmp=SRL.Draw_with_Conf_Level(MeanBLU135mm,0.875,'C0','BLU135mm Response')
-#tmp=SRL.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'C9','BLU 1260mm Response')
+tmp=PU.Draw_with_Conf_Level(MeanNUV135mm,1.0,'k','NUV Response')
+#tmp=PU.Draw_with_Conf_Level(MeanBLU135mm,0.875,'C0','BLU135mm Response')
+#tmp=PU.Draw_with_Conf_Level(MeanBLU1260mm,0.875/1.0244,'C9','BLU 1260mm Response')
 #tmp=SRL.Compute_EWs(path,"1260mm200lpm-550BLU-EW",MeanBLU1260mm,0.875/1.0244)
 np.savetxt(path+'SystemResponseNUV-1260mm200lpm.txt',MeanBLU1260mm,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
 pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
             wspace=None, hspace=None)
-pylab.savefig(path+'BLUTransmission.png',dpi=300)
+pylab.savefig(path+'NUVTransmission.png',dpi=300)

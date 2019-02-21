@@ -50,56 +50,58 @@ import matplotlib.pyplot as pl
 import pylab
 #import numpy as np
 import SysRespLIB as SRL
+import PlotUtils as PU
+import GeneralSpecUtils as GSU
 
 #RETRIEVE FILTER REGION REFERENCE SPECTRA######################################
-REDPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+REDPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 REDPlotParams.loadplotparams(drive,"PicklesRED","TBD")
 #REDPlotParams.loadplotparams(drive,"PicklesREDLines","TBD")
 
 REDO_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDO_FilesList.load_select_data("O_Stars")
-MeanREDO=SRL.SpectrumAggregation("f:",REDO_FilesList)
+MeanREDO=GSU.SpectrumAggregation("f:",REDO_FilesList)
 MeanREDO.ComputeAverageandStats()
 
 REDB_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDB_FilesList.load_select_data("B_Stars")
-MeanREDB=SRL.SpectrumAggregation("f:",REDB_FilesList)
+MeanREDB=GSU.SpectrumAggregation("f:",REDB_FilesList)
 MeanREDB.ComputeAverageandStats()
 
 REDA_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDA_FilesList.load_select_data("A_Stars")
-MeanREDA=SRL.SpectrumAggregation("f:",REDA_FilesList)
+MeanREDA=GSU.SpectrumAggregation("f:",REDA_FilesList)
 MeanREDA.ComputeAverageandStats()
 
 REDF_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDF_FilesList.load_select_data("F_Stars")
-MeanREDF=SRL.SpectrumAggregation("f:",REDF_FilesList)
+MeanREDF=GSU.SpectrumAggregation("f:",REDF_FilesList)
 MeanREDF.ComputeAverageandStats()
 
 REDG_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDG_FilesList.load_select_data("G_Stars")
-MeanREDG=SRL.SpectrumAggregation("f:",REDG_FilesList)
+MeanREDG=GSU.SpectrumAggregation("f:",REDG_FilesList)
 MeanREDG.ComputeAverageandStats()
 
 REDK_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDK_FilesList.load_select_data("K_Stars")
-MeanREDK=SRL.SpectrumAggregation("f:",REDK_FilesList)
+MeanREDK=GSU.SpectrumAggregation("f:",REDK_FilesList)
 MeanREDK.ComputeAverageandStats()
 
 REDM_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
 REDM_FilesList.load_select_data("M_Stars")
-MeanREDM=SRL.SpectrumAggregation("f:",REDM_FilesList)
+MeanREDM=GSU.SpectrumAggregation("f:",REDM_FilesList)
 MeanREDM.ComputeAverageandStats()
 
 #MAKE REFERENCE PLOT#####################################################
 REDPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(MeanREDO.MeanSpec,1.82,'k','O Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDB.MeanSpec,1.66,'C9','B Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDA.MeanSpec,1.48,'C0','A Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDF.MeanSpec,1.33,'m','F Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.12,'b','G Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDK.MeanSpec,0.88,'g','K Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDM.MeanSpec,0.42,'r','M Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDO.MeanSpec,1.82,'k','O Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDB.MeanSpec,1.66,'C9','B Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDA.MeanSpec,1.48,'C0','A Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDF.MeanSpec,1.33,'m','F Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.12,'b','G Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDK.MeanSpec,0.88,'g','K Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDM.MeanSpec,0.42,'r','M Stars')
 
 pl.plot([654.8,654.8],[0.,2.],'C1',linestyle='--',label="NII 654.8 nm",linewidth=1.0)
 pl.plot([656.3,656.3],[0.,2.],'k',linestyle='--',label="HI 656.3 nm",linewidth=1.0)
@@ -114,12 +116,12 @@ pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
 path=drive+"/Astronomy/Projects/Techniques/Nebular Diagnostics/"
 pylab.savefig(path+'Stellar Types for RED Spectra.png',dpi=300)
 
-GRNPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+GRNPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 GRNPlotParams.loadplotparams(drive,"PicklesGRN","TBD")
 GRNPlotParams.Setup_Plot()
-tmp=SRL.Draw_with_Conf_Level(MeanREDF.MeanSpec,1.0,'m','F Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.0,'b','G Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDK.MeanSpec,1.0,'g','K Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDF.MeanSpec,1.0,'m','F Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.0,'b','G Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDK.MeanSpec,1.0,'g','K Stars')
 
 pl.plot([486.0,486.0],[0.,2.],'b',linestyle='--',label="HI 486.0 nm",linewidth=1.0)
 pl.plot([496.0,496.0],[0.,2.],'g',linestyle='--',label="OIII 496 nm",linewidth=1.0)
@@ -132,13 +134,13 @@ pl.subplots_adjust(left=0.08, bottom=0.15, right=0.98, top=0.92,
 path=drive+"/Astronomy/Projects/Techniques/Nebular Diagnostics/"
 pylab.savefig(path+'Stellar Types for GRN Spectra.png',dpi=300)
 
-BLUPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")
+BLUPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 BLUPlotParams.loadplotparams(drive,"PicklesBLU","TBD")
 BLUPlotParams.Setup_Plot()
 #tmp=SRL.Draw_with_Conf_Level(MeanREDA.MeanSpec,0.72,'k','A Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDF.MeanSpec,0.72,'m','F Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.0,'b','G Stars')
-tmp=SRL.Draw_with_Conf_Level(MeanREDK.MeanSpec,1.33,'g','K Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDF.MeanSpec,0.72,'m','F Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDG.MeanSpec,1.0,'b','G Stars')
+tmp=PU.Draw_with_Conf_Level(MeanREDK.MeanSpec,1.33,'g','K Stars')
 
 pl.plot([486.0,486.0],[0.,2.],'b',linestyle='--',label="HI 486.0 nm",linewidth=1.0)
 pl.plot([496.0,496.0],[0.,2.],'g',linestyle='--',label="OIII 496 nm",linewidth=1.0)

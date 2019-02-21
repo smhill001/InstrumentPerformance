@@ -5,44 +5,37 @@ Created on Wed Feb 08 09:21:01 2017
     This library is intended to read, manipulate and write spectral data,
     specifically for the purpose of analyzing observing system response. 
     
-    0CLASS SysResp_plot_params
+    0CLASS measurement_list
     0  INIT
-    0  Setup_Plot
-    0FUNCTION Draw_with_Conf_Level(Data,scl,clr,lbl)
-    1CLASS measurement_list
-    1  INIT
-    1  Load_all_data
-    1  Load_select_data
+    0  Load_all_data
+    0  Load_select_data
     1FUNCTION GetObsFileNames(Path,IndexFile)
-    2CLASS SpectrumAggregation(drive,ObsList)
-    2  INIT
-    2  ComputeAverageandStats
-    2FUNCTION Compute_Transmission(Response_with_Filter,Response_without_Filter)
     2FUNCTION Compute_EWs(path,outfile,Spectrum_with_Stats)
+    3CLASS manufacturer_camera_data
+    3  INIT
+    3  load_all_data
+    3  uniform_wave_grid
+    4CLASS manufacturer_Celestrom_data
+    4  INIT
+    4  load_all_data
+    4  uniform_wave_grid
+    5CLASS atmosphere_data
+    5  INIT
+    5  load_all_data
+    5  uniform_wave_grid
  
 @author: SM Hill
-Update 2/11/2018
 """
 import sys
 drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play\Util')
 
 import ConfigFiles as CF
-
-
-def Draw_with_Conf_Level(Data,scl,clr,lbl):                
-#Plot Layout Configuration
-    import pylab as pl
-    pl.plot(Data[:,0],Data[:,1]*scl,label=lbl,linewidth=1.0,color=clr)
-    pl.plot(Data[:,0],(Data[:,1]+1.96*Data[:,3])*scl,linewidth=0.2,color=clr)
-    pl.plot(Data[:,0],(Data[:,1]-1.96*Data[:,3])*scl,linewidth=0.2,color=clr)
-    #ax.fill_between((Data[:,0]),(Data[:,1]+1.96*Data[:,3])*scl,(Data[:,1]-1.96*Data[:,3])*scl)
-    return 0        
   
 class measurement_list(CF.readtextfilelines):
     pass
     def load_all_data(self):
-        
+        print "Hi in measurement_list>load_all_data"
         self.MeasTarget=['']   #Keyword for star identification
         self.DataType=['']           #Target, e.g., component of a multiple star
         self.DataTarget=['']           #Target, e.g., component of a multiple star
@@ -78,7 +71,7 @@ class measurement_list(CF.readtextfilelines):
                 self.FileList.extend([str(fields[7])])
                 self.NObs=self.NObs+1
 
-    def load_select_data(self,MeasTgt):
+    def load_select_data(self,MeasTgt,DateUTSelect="All"):
         
         self.MeasTarget=['']   #Keyword for star identification
         self.DataType=['']           #Target, e.g., component of a multiple star
@@ -94,27 +87,52 @@ class measurement_list(CF.readtextfilelines):
         for recordindex in range(1,self.nrecords):
             fields=self.CfgLines[recordindex].split(',')
             if fields[0]==MeasTgt:
-                if FirstTime:
-                    self.MeasTarget[0]=str(fields[0])
-                    self.DataType[0]=str(fields[1])
-                    self.DataTarget[0]=str(fields[2])
-                    self.DateUT[0]=str(fields[3])
-                    self.Optics[0]=str(fields[4])
-                    self.Camera[0]=str(fields[5])
-                    self.Grating[0]=str(fields[6])
-                    self.FileList[0]=str(fields[7])
-                    FirstTime=False
-                    self.NObs=1
+                if DateUTSelect=="All":
+                    if FirstTime:
+                        self.MeasTarget[0]=str(fields[0])
+                        self.DataType[0]=str(fields[1])
+                        self.DataTarget[0]=str(fields[2])
+                        self.DateUT[0]=str(fields[3])
+                        self.Optics[0]=str(fields[4])
+                        self.Camera[0]=str(fields[5])
+                        self.Grating[0]=str(fields[6])
+                        self.FileList[0]=str(fields[7])
+                        FirstTime=False
+                        self.NObs=1
+                    else:
+                        self.MeasTarget.extend([str(fields[0])])
+                        self.DataType.extend([str(fields[1])])
+                        self.DataTarget.extend([str(fields[2])])
+                        self.DateUT.extend([str(fields[3])])
+                        self.Optics.extend([str(fields[4])])
+                        self.Camera.extend([str(fields[5])])
+                        self.Grating.extend([str(fields[6])])
+                        self.FileList.extend([str(fields[7])])
+                        self.NObs=self.NObs+1
                 else:
-                    self.MeasTarget.extend([str(fields[0])])
-                    self.DataType.extend([str(fields[1])])
-                    self.DataTarget.extend([str(fields[2])])
-                    self.DateUT.extend([str(fields[3])])
-                    self.Optics.extend([str(fields[4])])
-                    self.Camera.extend([str(fields[5])])
-                    self.Grating.extend([str(fields[6])])
-                    self.FileList.extend([str(fields[7])])
-                    self.NObs=self.NObs+1
+                    if DateUTSelect==fields[3]:
+                        if FirstTime:
+                            self.MeasTarget[0]=str(fields[0])
+                            self.DataType[0]=str(fields[1])
+                            self.DataTarget[0]=str(fields[2])
+                            self.DateUT[0]=str(fields[3])
+                            self.Optics[0]=str(fields[4])
+                            self.Camera[0]=str(fields[5])
+                            self.Grating[0]=str(fields[6])
+                            self.FileList[0]=str(fields[7])
+                            FirstTime=False
+                            self.NObs=1
+                        else:
+                            self.MeasTarget.extend([str(fields[0])])
+                            self.DataType.extend([str(fields[1])])
+                            self.DataTarget.extend([str(fields[2])])
+                            self.DateUT.extend([str(fields[3])])
+                            self.Optics.extend([str(fields[4])])
+                            self.Camera.extend([str(fields[5])])
+                            self.Grating.extend([str(fields[6])])
+                            self.FileList.extend([str(fields[7])])
+                            self.NObs=self.NObs+1
+                    
 
 def GetObsFileNames(Path,IndexFile):
     """
@@ -138,82 +156,6 @@ def GetObsFileNames(Path,IndexFile):
             
     return FNArray
 
-class SpectrumAggregation:
-    def __init__(self,drive,ObsList):
-#def Average_Spectrum(drive,ObsList):
-        import numpy as np
-        import scipy
-        self.path=drive+"/Astronomy/Python Play/TechniquesLibrary/"
-        #print path
-        for i in range(0,len(ObsList.FileList)):
-            print "******** i=",i,ObsList.FileList[i]
-            self.FNList=GetObsFileNames(self.path,ObsList.FileList[i])
-            print "********len(FNList)",len(self.FNList),self.FNList
-            if ObsList.DataType[i]=="Reference":
-                path=drive+"/Astronomy/Python Play/SPLibraries/SpectralReferenceFiles/ReferenceLibrary/"
-            else:    
-                path=drive+"/Astronomy/Projects/"+ObsList.DataType[i]+"/"+ObsList.DataTarget[i]+"/Spectral Data/1D Spectra/"
-            
-            ###Need loop over data files here!!! "j"
-            for j in range(0,len(self.FNList)):
-                print "****** j=",j
-                if ObsList.DataType[i]=="Reference":
-                    temp2 = scipy.loadtxt(path+self.FNList[j], dtype=float, usecols=(0,1))
-                else:
-                    temp1 = scipy.fromfile(file=path+self.FNList[j], dtype=float, count=-1, sep='\t')    
-                    temp2 = scipy.reshape(temp1,[temp1.size/2,2])
-                self.wave = temp2[:,0]
-                tmpsig=temp2[:,1]
-                print i
-                print temp2.shape
-        
-                if i==0 and j==0:
-                    self.signalarray=np.zeros([tmpsig.size,1])
-                    print self.signalarray.shape
-                    self.signalarray[:,0]=tmpsig
-                else:
-                    print "i>0 self.signalarray.shape:",self.signalarray.shape
-                    print "temp2.shape: ",temp2.shape
-                    print "temp2[0,0]: ",temp2[0,0]
-                    self.signalarray=np.insert(self.signalarray,1,tmpsig,axis=1)
-                    print "i>0 self.signalarray.shape:",self.signalarray.shape
-        if ObsList.DataType[i]=="Reference":
-            self.wave=self.wave/10.
-
-    def ComputeAverageandStats(self):
-        import scipy.stats as ST
-        import numpy as np
-        ZeroIndices=np.where(self.signalarray <= 0.)
-        self.signalarray[ZeroIndices]=np.nan
-        #pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
-        #pl.plot(wave,signalarray[:,0])        
-        AvgSignal=np.nanmean(self.signalarray,axis=1)
-        std=np.nanstd(self.signalarray,axis=1) 
-        sem=ST.sem(self.signalarray,axis=1,ddof=0,nan_policy='omit')
-            
-        self.MeanSpec=np.zeros([self.wave.size,4])
-        self.MeanSpec[:,0]=self.wave
-        self.MeanSpec[:,1]=AvgSignal
-        self.MeanSpec[:,2]=std
-        self.MeanSpec[:,3]=sem
-        
-        return 0
-    
-def SpectrumMath(Spectrum1,Spectrum2,Operation):
-    from copy import deepcopy
-    import numpy as np
-    ResultSpectrum=deepcopy(Spectrum1)
-    if Operation == "Divide":
-        ResultSpectrum[:,1]=Spectrum1[:,1]/Spectrum2[:,1]
-    elif Operation == "Multiply":
-        ResultSpectrum[:,1]=Spectrum1[:,1]*Spectrum2[:,1]
-    #Combine uncertainty arrays in quadrature
-    ResultSpectrum[:,2]=ResultSpectrum[:,1]*np.sqrt((Spectrum1[:,2]/Spectrum1[:,1])**2+
-        (Spectrum2[:,2]/Spectrum2[:,1])**2,)
-    ResultSpectrum[:,3]=ResultSpectrum[:,1]*np.sqrt((Spectrum1[:,3]/Spectrum1[:,1])**2+
-        (Spectrum2[:,3]/Spectrum2[:,1])**2,)
-        
-    return ResultSpectrum
 
 def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
 ###############################################################################
