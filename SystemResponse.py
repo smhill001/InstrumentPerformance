@@ -45,13 +45,14 @@ drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play')
 sys.path.append(drive+'\\Astronomy\Python Play\Techniques Library')
 sys.path.append(drive+'\\Astronomy\Python Play\SpectroPhotometry\Spectroscopy')
+sys.path.append(drive+'\\Astronomy\Python Play\Utils')
 #sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
 
 import matplotlib.pyplot as pl
 import pylab
 import numpy as np
 import SysRespLIB as SRL
-#import ConfigFiles as CF
+import ConfigFiles as CF
 import PlotUtils as PU
 import GeneralSpecUtils as GSU
 #RETRIEVE ST2000 RESPONSES#####################################################
@@ -59,59 +60,59 @@ path=drive+"/Astronomy/Projects/Techniques/Flux Calibration/"
 # Read and reshape spectral data files    
 
 ManCamData=SRL.manufacturer_camera_data(path+"CameraResponse-ST2000Data.txt")
-ManCamData.load_all_data()
+ManCamData.load_records()
 ManCamData.uniform_wave_grid()
 
 C8_StarBright_Data=SRL.manufacturer_Celestrom_data(path+"CameraResponse - StarBright.txt")
-C8_StarBright_Data.load_all_data()
+C8_StarBright_Data.load_records()
 C8_StarBright_Data.uniform_wave_grid()
 
 C8_StarBrightXLT_Data=SRL.manufacturer_Celestrom_data(path+"CameraResponse - StarBrightXLT.txt")
-C8_StarBrightXLT_Data.load_all_data()
+C8_StarBrightXLT_Data.load_records()
 C8_StarBrightXLT_Data.uniform_wave_grid()
 
 Atmosphere_Data=SRL.atmosphere_data(path+"CameraResponse - Atmosphere.txt")
-Atmosphere_Data.load_all_data()
+Atmosphere_Data.load_records()
 Atmosphere_Data.uniform_wave_grid()
 
 CLRPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 CLRPlotParams.loadplotparams(drive,"550CLR","TBD")
-CLR550_ObsList=SRL.measurement_list(CLRPlotParams.DataFile)
-CLR550_ObsList.load_select_data("1260mm200lpm")
+CLR550_ObsList=CF.measurement_list(CLRPlotParams.DataFile)
+CLR550_ObsList.load_records(MeasTgt="1260mm200lpm")
 Mean200linespermm1260mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean200linespermm1260mm.ComputeAverageandStats()
 tmp=SRL.Compute_EWs(path,"1260mm200lpm-550CLR-EW",Mean200linespermm1260mm.MeanSpec,1.0189)
 np.savetxt(path+'SystemResponseCLR-1260mm200lpm.txt',Mean200linespermm1260mm.MeanSpec,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-CLR550_ObsList.load_select_data("1260mm100lpm")
+CLR550_ObsList.load_records(MeasTgt="1260mm100lpm")
 Mean100linespermm1260mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean100linespermm1260mm.ComputeAverageandStats()
 
-CLR550_ObsList.load_select_data("135mm100lpm")
+CLR550_ObsList.load_records(MeasTgt="135mm100lpm")
 Mean100linespermm135mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean100linespermm135mm.ComputeAverageandStats()
 tmp=SRL.Compute_EWs(path,"135mm100lpm-550CLR-EW",Mean100linespermm135mm.MeanSpec,1.0224)
 np.savetxt(path+'SystemResponseCLR-135mm100lpm.txt',Mean100linespermm135mm.MeanSpec,delimiter=" ",
            fmt="%10.3F %10.7F %10.7F %10.7F")
 
-CLR550_ObsList.load_select_data("135mm200lpm")
+CLR550_ObsList.load_records("135mm200lpm")
 Mean200linespermm135mm=GSU.SpectrumAggregation("f:",CLR550_ObsList)
 Mean200linespermm135mm.ComputeAverageandStats()
 
 #RETRIEVE FILTER RESPONSES#####################################################
 NIRPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 NIRPlotParams.loadplotparams(drive,"685NIR","TBD")
-NIR685_ObsList=SRL.measurement_list(NIRPlotParams.DataFile)
-NIR685_ObsList.load_all_data()
+NIR685_ObsList=CF.measurement_list(NIRPlotParams.DataFile)
+NIR685_ObsList.load_records()
 MeanNIRtmp=GSU.SpectrumAggregation("f:",NIR685_ObsList)
 MeanNIRtmp.ComputeAverageandStats()
 MeanNIR135mm=MeanNIRtmp.MeanSpec[430:2325,:]
 
 REDPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 REDPlotParams.loadplotparams(drive,"650RED","TBD")
-RED650_ObsList=SRL.measurement_list(REDPlotParams.DataFile)
-RED650_ObsList.load_all_data()
+RED650_ObsList=CF.measurement_list(REDPlotParams.DataFile)
+RED650_ObsList.load_records()
 MeanREDtmp=GSU.SpectrumAggregation("f:",RED650_ObsList)
 MeanREDtmp.ComputeAverageandStats()
 MeanRED135mm=MeanREDtmp.MeanSpec[430:2325,:]
@@ -121,8 +122,8 @@ np.savetxt(path+'SystemResponseRED-135mm100lpm.txt',MeanRED135mm,delimiter=" ",
 
 GRNPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 GRNPlotParams.loadplotparams(drive,"550GRN","TBD")
-GRN550_ObsList=SRL.measurement_list(GRNPlotParams.DataFile)
-GRN550_ObsList.load_all_data()
+GRN550_ObsList=CF.measurement_list(GRNPlotParams.DataFile)
+GRN550_ObsList.load_records()
 MeanGRNtmp=GSU.SpectrumAggregation("f:",GRN550_ObsList)
 MeanGRNtmp.ComputeAverageandStats()
 MeanGRN135mm=MeanGRNtmp.MeanSpec[430:2325,:]
@@ -132,8 +133,8 @@ np.savetxt(path+'SystemResponseGRN-135mm100lpm.txt',MeanGRN135mm,delimiter=" ",
 
 BLUPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 BLUPlotParams.loadplotparams(drive,"450BLU","TBD")
-BLU450_ObsList=SRL.measurement_list(BLUPlotParams.DataFile)
-BLU450_ObsList.load_all_data()
+BLU450_ObsList=CF.measurement_list(BLUPlotParams.DataFile)
+BLU450_ObsList.load_records()
 MeanBLUtmp=GSU.SpectrumAggregation("f:",BLU450_ObsList)
 MeanBLUtmp.ComputeAverageandStats()
 MeanBLU135mm=MeanBLUtmp.MeanSpec[430:2325,:]
@@ -143,8 +144,8 @@ np.savetxt(path+'SystemResponseBLU-135mm100lpm.txt',MeanBLU135mm,delimiter=" ",
 
 NUVPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 NUVPlotParams.loadplotparams(drive,"380NUV","TBD")
-NUV380_ObsList=SRL.measurement_list(NUVPlotParams.DataFile)
-NUV380_ObsList.load_all_data()
+NUV380_ObsList=CF.measurement_list(NUVPlotParams.DataFile)
+NUV380_ObsList.load_records()
 MeanNUVtmp=GSU.SpectrumAggregation("f:",NUV380_ObsList)
 MeanNUVtmp.ComputeAverageandStats()
 MeanNUV135mm=MeanNUVtmp.MeanSpec[430:2325,:]

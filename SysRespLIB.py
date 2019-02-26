@@ -5,11 +5,6 @@ Created on Wed Feb 08 09:21:01 2017
     This library is intended to read, manipulate and write spectral data,
     specifically for the purpose of analyzing observing system response. 
     
-    0CLASS measurement_list
-    0  INIT
-    0  Load_all_data
-    0  Load_select_data
-    1FUNCTION GetObsFileNames(Path,IndexFile)
     2FUNCTION Compute_EWs(path,outfile,Spectrum_with_Stats)
     3CLASS manufacturer_camera_data
     3  INIT
@@ -30,132 +25,7 @@ import sys
 drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play\Util')
 
-import ConfigFiles as CF
-  
-class measurement_list(CF.readtextfilelines):
-    pass
-    def load_all_data(self):
-        print "Hi in measurement_list>load_all_data"
-        self.MeasTarget=['']   #Keyword for star identification
-        self.DataType=['']           #Target, e.g., component of a multiple star
-        self.DataTarget=['']           #Target, e.g., component of a multiple star
-        self.DateUT=['']           #UT Date of observation: YYYYMMDDUT
-        self.Optics=['']       #Instrument code, to be used for aperture
-        self.Camera=['']       #Instrument code, to be used for aperture
-        self.Grating=['']    #Grating 100lpm or 200lpm or None
-        self.FileList=['']         #List of observation image files (FITS)
-        self.NObs=0               #Number of observatinos
-        FirstTime=True
-
-        for recordindex in range(1,self.nrecords):
-            fields=self.CfgLines[recordindex].split(',')
-            if FirstTime:
-                self.MeasTarget[0]=str(fields[0])
-                self.DataType[0]=str(fields[1])
-                self.DataTarget[0]=str(fields[2])
-                self.DateUT[0]=str(fields[3])
-                self.Optics[0]=str(fields[4])
-                self.Camera[0]=str(fields[5])
-                self.Grating[0]=str(fields[6])
-                self.FileList[0]=str(fields[7])
-                FirstTime=False
-                self.NObs=1
-            else:
-                self.MeasTarget.extend([str(fields[0])])
-                self.DataType.extend([str(fields[1])])
-                self.DataTarget.extend([str(fields[2])])
-                self.DateUT.extend([str(fields[3])])
-                self.Optics.extend([str(fields[4])])
-                self.Camera.extend([str(fields[5])])
-                self.Grating.extend([str(fields[6])])
-                self.FileList.extend([str(fields[7])])
-                self.NObs=self.NObs+1
-
-    def load_select_data(self,MeasTgt,DateUTSelect="All"):
-        
-        self.MeasTarget=['']   #Keyword for star identification
-        self.DataType=['']           #Target, e.g., component of a multiple star
-        self.DataTarget=['']           #Target, e.g., component of a multiple star
-        self.DateUT=['']           #UT Date of observation: YYYYMMDDUT
-        self.Optics=['']       #Instrument code, to be used for aperture
-        self.Camera=['']       #Instrument code, to be used for aperture
-        self.Grating=['']    #Grating 100lpm or 200lpm or None
-        self.FileList=['']         #List of observation image files (FITS)
-        self.NObs=0                #Number of observatinos
-        FirstTime=True
-
-        for recordindex in range(1,self.nrecords):
-            fields=self.CfgLines[recordindex].split(',')
-            if fields[0]==MeasTgt:
-                if DateUTSelect=="All":
-                    if FirstTime:
-                        self.MeasTarget[0]=str(fields[0])
-                        self.DataType[0]=str(fields[1])
-                        self.DataTarget[0]=str(fields[2])
-                        self.DateUT[0]=str(fields[3])
-                        self.Optics[0]=str(fields[4])
-                        self.Camera[0]=str(fields[5])
-                        self.Grating[0]=str(fields[6])
-                        self.FileList[0]=str(fields[7])
-                        FirstTime=False
-                        self.NObs=1
-                    else:
-                        self.MeasTarget.extend([str(fields[0])])
-                        self.DataType.extend([str(fields[1])])
-                        self.DataTarget.extend([str(fields[2])])
-                        self.DateUT.extend([str(fields[3])])
-                        self.Optics.extend([str(fields[4])])
-                        self.Camera.extend([str(fields[5])])
-                        self.Grating.extend([str(fields[6])])
-                        self.FileList.extend([str(fields[7])])
-                        self.NObs=self.NObs+1
-                else:
-                    if DateUTSelect==fields[3]:
-                        if FirstTime:
-                            self.MeasTarget[0]=str(fields[0])
-                            self.DataType[0]=str(fields[1])
-                            self.DataTarget[0]=str(fields[2])
-                            self.DateUT[0]=str(fields[3])
-                            self.Optics[0]=str(fields[4])
-                            self.Camera[0]=str(fields[5])
-                            self.Grating[0]=str(fields[6])
-                            self.FileList[0]=str(fields[7])
-                            FirstTime=False
-                            self.NObs=1
-                        else:
-                            self.MeasTarget.extend([str(fields[0])])
-                            self.DataType.extend([str(fields[1])])
-                            self.DataTarget.extend([str(fields[2])])
-                            self.DateUT.extend([str(fields[3])])
-                            self.Optics.extend([str(fields[4])])
-                            self.Camera.extend([str(fields[5])])
-                            self.Grating.extend([str(fields[6])])
-                            self.FileList.extend([str(fields[7])])
-                            self.NObs=self.NObs+1
-                    
-
-def GetObsFileNames(Path,IndexFile):
-    """
-    A base class for reading a list of data files (observations). This should
-    also be a single base class used for the photometry project.
-    """
-    CfgFile=open(IndexFile,'r')
-    CfgLines=CfgFile.readlines()
-    CfgFile.close()
-    nrecords=len(CfgLines)
-    #print CfgLines
-    FNArray=['']
-    FirstTime=True
-    for recordindex in range(0,nrecords):
-        fields=CfgLines[recordindex].split(',')
-        if FirstTime:
-            FNArray[0]=str(fields[0])
-            FirstTime=False
-        else:
-            FNArray.extend([str(fields[0])])
-            
-    return FNArray
-
+import ConfigFiles as CF                  
 
 def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
 ###############################################################################
@@ -225,7 +95,7 @@ def Compute_EWs(path,outfile,Spectrum_with_Stats,Scale):
     
 class manufacturer_camera_data(CF.readtextfilelines):
     pass
-    def load_all_data(self):
+    def load_records(self):
         
         self.Wavelength=[0.]   #Keyword for star identification
         self.ST2000_QE=[0.]           #Target, e.g., component of a multiple star
@@ -259,7 +129,7 @@ class manufacturer_camera_data(CF.readtextfilelines):
                 
 class manufacturer_Celestrom_data(CF.readtextfilelines):
     pass
-    def load_all_data(self):
+    def load_records(self):
         
         self.Wavelength=[0.]   #Keyword for star identification
         self.Transmission=[0.]           #Target, e.g., component of a multiple star
@@ -289,7 +159,7 @@ class manufacturer_Celestrom_data(CF.readtextfilelines):
 
 class atmosphere_data(CF.readtextfilelines):
     pass
-    def load_all_data(self):
+    def load_records(self):
         
         self.Wavelength=[0.]   #Keyword for star identification
         self.Transmission=[0.]           #Target, e.g., component of a multiple star

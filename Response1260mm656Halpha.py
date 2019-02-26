@@ -56,11 +56,11 @@ path=drive+"/Astronomy/Projects/Techniques/Flux Calibration/"
 # Read and reshape spectral data files    
 
 ManComp7Data=SRL.manufacturer_Comp7_data(path+"baader_h-alpha.txt")
-ManComp7Data.load_all_data()
+ManComp7Data.load_records()
 ManComp7Data.uniform_wave_grid()
 
 ManBaaderData=SRL.manufacturer_Comp7_data(path+"h_alpha_ccd_7nm_kurve.txt")
-ManBaaderData.load_all_data()
+ManBaaderData.load_records()
 ManBaaderData.uniform_wave_grid()
 
 HIAPlotParams=SRL.SysResp_plot_params("FluxCalPlotConfig.txt")

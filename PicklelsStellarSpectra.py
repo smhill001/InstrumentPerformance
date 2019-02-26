@@ -45,12 +45,13 @@ drive='f:'
 sys.path.append(drive+'\\Astronomy\Python Play')
 sys.path.append(drive+'\\Astronomy\Python Play\Techniques Library')
 sys.path.append(drive+'\\Astronomy\Python Play\Galaxies')
+sys.path.append(drive+'\\Astronomy\Python Play\Utils')
 
 import matplotlib.pyplot as pl
 import pylab
 #import numpy as np
-import SysRespLIB as SRL
 import PlotUtils as PU
+import ConfigFiles as CF
 import GeneralSpecUtils as GSU
 
 #RETRIEVE FILTER REGION REFERENCE SPECTRA######################################
@@ -58,38 +59,38 @@ REDPlotParams=PU.PlotSetup("FluxCalPlotConfig.txt")
 REDPlotParams.loadplotparams(drive,"PicklesRED","TBD")
 #REDPlotParams.loadplotparams(drive,"PicklesREDLines","TBD")
 
-REDO_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
-REDO_FilesList.load_select_data("O_Stars")
+REDO_FilesList=CF.measurement_list(REDPlotParams.DataFile)
+REDO_FilesList.load_records(MeasTgt="O_Stars")
 MeanREDO=GSU.SpectrumAggregation("f:",REDO_FilesList)
 MeanREDO.ComputeAverageandStats()
 
-REDB_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
-REDB_FilesList.load_select_data("B_Stars")
+REDB_FilesList=CF.measurement_list(REDPlotParams.DataFile)
+REDB_FilesList.load_records(MeasTgt="B_Stars")
 MeanREDB=GSU.SpectrumAggregation("f:",REDB_FilesList)
 MeanREDB.ComputeAverageandStats()
 
-REDA_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
-REDA_FilesList.load_select_data("A_Stars")
+REDA_FilesList=CF.measurement_list(REDPlotParams.DataFile)
+REDA_FilesList.load_records(MeasTgt="A_Stars")
 MeanREDA=GSU.SpectrumAggregation("f:",REDA_FilesList)
 MeanREDA.ComputeAverageandStats()
 
-REDF_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
-REDF_FilesList.load_select_data("F_Stars")
+REDF_FilesList=CF.measurement_list(REDPlotParams.DataFile)
+REDF_FilesList.load_records(MeasTgt="F_Stars")
 MeanREDF=GSU.SpectrumAggregation("f:",REDF_FilesList)
 MeanREDF.ComputeAverageandStats()
 
-REDG_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
-REDG_FilesList.load_select_data("G_Stars")
+REDG_FilesList=CF.measurement_list(REDPlotParams.DataFile)
+REDG_FilesList.load_records("G_Stars")
 MeanREDG=GSU.SpectrumAggregation("f:",REDG_FilesList)
 MeanREDG.ComputeAverageandStats()
 
-REDK_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
-REDK_FilesList.load_select_data("K_Stars")
+REDK_FilesList=CF.measurement_list(REDPlotParams.DataFile)
+REDK_FilesList.load_records(MeasTgt="K_Stars")
 MeanREDK=GSU.SpectrumAggregation("f:",REDK_FilesList)
 MeanREDK.ComputeAverageandStats()
 
-REDM_FilesList=SRL.measurement_list(REDPlotParams.DataFile)
-REDM_FilesList.load_select_data("M_Stars")
+REDM_FilesList=CF.measurement_list(REDPlotParams.DataFile)
+REDM_FilesList.load_records(MeasTgt="M_Stars")
 MeanREDM=GSU.SpectrumAggregation("f:",REDM_FilesList)
 MeanREDM.ComputeAverageandStats()
 
